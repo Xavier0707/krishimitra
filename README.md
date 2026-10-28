@@ -25,11 +25,12 @@ Indian agriculture requires actionable clarity, not generic dashboards. **Krishi
 - **Styling**: Tailwind CSS with custom agricultural tokens (Forest Green `#14452F`, Agricultural Emerald `#2E7D32`, Earth Terracotta)
 - **Icons**: Lucide React
 - **Maps**: OpenStreetMap and Leaflet
+- **AI Decision Intelligence**: Google Gemma 4 31B (`gemma-4-31b-it`) dense multimodal instruction model powered by the official `@google/genai` SDK, with grounded ICAR/KVK agronomy fallback
 - **Weather**: Open-Meteo Meteorological API (Open Data)
 - **Mandi Feeds**: data.gov.in / Agmarknet validated schemas with resilient fallback datasets
 - **Database & Auth**: Supabase PostgreSQL with strict Row Level Security (RLS) & Offline Local Demo Mode
 - **Offline / PWA**: IndexedDB / localStorage caching, Service Worker & Manifest
-- **Testing**: Vitest unit testing suite for mathematical financial calculations & agronomic risk engines
+- **Testing**: Vitest unit & integration testing suite (42 tests covering calculations, RAG, and model resilience)
 
 ---
 

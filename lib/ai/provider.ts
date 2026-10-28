@@ -1,92 +1,83 @@
 import { CropSymptomDiagnosis } from '../types';
 import { diagnoseCropSymptoms } from './crop-symptoms';
-import { generateCopilotResponse, CopilotMessage, CopilotContext } from './copilot-rag';
+import { CopilotMessage, CopilotContext } from './copilot-rag';
+import { gemmaService, GemmaImageInput } from './gemma';
 
-export type AIProviderType = 'gemini' | 'openai' | 'mock';
+export type AIProviderType = 'gemma' | 'gemini' | 'openai' | 'mock';
 
 export class ModularAIProvider {
-  private provider: AIProviderType;
-  private geminiKey: string | null;
-  private openaiKey: string | null;
+  private gemmaKey: string | null;
 
   constructor() {
-    this.provider = (process.env.AI_PROVIDER as AIProviderType) || 'mock';
-    this.geminiKey = process.env.GEMINI_API_KEY || null;
-    this.openaiKey = process.env.OPENAI_API_KEY || null;
+    this.gemmaKey = process.env.GEMINI_API_KEY || null;
   }
 
   public getProviderName(): string {
-    if (this.geminiKey) return 'Google Gemini Vision & LLM';
-    if (this.openaiKey) return 'OpenAI GPT-4o';
+    if (gemmaService.isConfigured()) {
+      return `Google Gemma 4 31B (${gemmaService.getModelIdentifier()})`;
+    }
     return 'KrishiConnect Agricultural Agronomy Engine (Local Domain)';
   }
 
   public isLiveLLMConfigured(): boolean {
-    return Boolean(this.geminiKey || this.openaiKey);
+    return gemmaService.isConfigured();
   }
 
   /**
-   * Diagnostic assessment of crop photos and symptoms
+   * Diagnostic assessment of crop photos and symptoms using Gemma 4 31B Multimodal
    */
   public async analyzeCropHealth(
     cropType: string,
     symptomsDescription: string,
     imageBase64?: string
   ): Promise<CropSymptomDiagnosis> {
-    // If Gemini API is configured with key
-    if (this.geminiKey && this.geminiKey.trim().length > 10) {
+    if (gemmaService.isConfigured()) {
       try {
-        const prompt = `You are an expert agricultural plant pathologist specializing in Indian crops (Madhya Pradesh).
-Crop: ${cropType}
-Farmer Symptoms Description: ${symptomsDescription}
-Please evaluate the provided image and description. Distinguish preliminary possibilities from confirmed diagnoses. Provide safe, verified cultural, organic, and label-compliant chemical recommendations. If uncertain, recommend consulting local KVK.
-Respond in valid JSON matching this schema:
-{
-  "conditionNameEn": "string",
-  "conditionNameHi": "string",
-  "confidenceTier": "High" | "Moderate" | "Preliminary Observation",
-  "scientificName": "string",
-  "symptomsObserved": ["string"],
-  "favorableWeatherConditions": "string",
-  "organicManagementEn": ["string"],
-  "organicManagementHi": ["string"],
-  "chemicalManagementEn": ["string"],
-  "chemicalManagementHi": ["string"],
-  "precautionsEn": ["string"],
-  "precautionsHi": ["string"],
-  "disclaimer": "string",
-  "requiresExpertVisit": boolean
-}`;
-
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.geminiKey}`;
-        const parts: Array<Record<string, unknown>> = [{ text: prompt }];
-
+        let imageInput: GemmaImageInput | undefined;
         if (imageBase64) {
-          // clean base64 string
-          const cleanB64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
-          parts.push({
-            inline_data: {
-              mime_type: 'image/jpeg',
-              data: cleanB64,
-            },
-          });
+          const match = imageBase64.match(/^data:(image\/[a-zA-Z]+);base64,/);
+          const mimeType = (match ? match[1] : 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/webp';
+          const cleanB64 = imageBase64.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
+          imageInput = {
+            mimeType,
+            base64Data: cleanB64,
+          };
         }
 
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts }] }),
+        const prompt = `Act as an agricultural plant pathology assistant for Indian farmers.
+Evaluate the following crop health issue:
+Crop: ${cropType}
+Farmer Symptoms Description: ${symptomsDescription}
+
+Provide your evaluation strictly in valid JSON matching this exact structure:
+{
+  "conditionNameEn": "Possible condition name in English",
+  "conditionNameHi": "संभावित रोग/कीट का नाम हिंदी में",
+  "confidenceTier": "Moderate",
+  "scientificName": "Scientific or pathogen name if applicable",
+  "symptomsObserved": ["Symptom 1", "Symptom 2"],
+  "favorableWeatherConditions": "Weather conditions that foster this condition",
+  "organicManagementEn": ["Organic step 1", "Organic step 2"],
+  "organicManagementHi": ["जैविक उपाय 1", "जैविक उपाय 2"],
+  "chemicalManagementEn": ["Label-compliant chemical step with safety warning"],
+  "chemicalManagementHi": ["सुरक्षा चेतावनी के साथ अनुशंसित रासायनिक उपाय"],
+  "precautionsEn": ["Safety precaution 1"],
+  "precautionsHi": ["सावधानी 1"],
+  "disclaimer": "यह प्राथमिक दृश्य विश्लेषण है। अंतिम पुष्टि हेतु स्थानीय कृषि विज्ञान केंद्र (KVK) अथवा कृषि वैज्ञानिक से संपर्क करें।",
+  "requiresExpertVisit": true
+}`;
+
+        const gemmaResult = await gemmaService.generateAnswer({
+          message: prompt,
+          language: 'hi',
+          image: imageInput,
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (candidateText) {
-            const jsonMatch = candidateText.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              return parsed as CropSymptomDiagnosis;
-            }
+        if (gemmaResult && gemmaResult.text) {
+          const jsonMatch = gemmaResult.text.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            return parsed as CropSymptomDiagnosis;
           }
         }
       } catch {
@@ -106,62 +97,37 @@ Respond in valid JSON matching this schema:
     context: CopilotContext,
     language: 'hi' | 'en' = 'hi'
   ): Promise<CopilotMessage> {
-    // If Gemini key is available
-    if (this.geminiKey && this.geminiKey.trim().length > 10) {
+    if (gemmaService.isConfigured()) {
       try {
-        const systemPrompt = `You are Krishi Copilot, a helpful, honest agricultural decision intelligence assistant for farmers in Madhya Pradesh, India.
-Farmer: ${context.farmerName}, District: ${context.district}, Current Crop: ${context.activeCrop}, Farm: ${context.farmSizeAcres} acres.
-Language: ${language === 'hi' ? 'Hindi (Simple rural Hindi terms)' : 'English'}.
-Rules:
-1. Never hallucinate fake prices or claim 100% yield guarantees.
-2. Provide grounded, practical advice with actionable steps.
-3. Always include 1-2 verified reference sources (ICAR, KVK, Agmarknet, Open-Meteo).
-4. Provide 2-3 helpful follow-up questions.`;
-
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.geminiKey}`;
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: systemPrompt },
-                  { text: `Farmer query: "${query}"` },
-                ],
-              },
-            ],
-          }),
+        const res = await gemmaService.generateAnswer({
+          message: query,
+          language,
+          context: {
+            farmerName: context.farmerName,
+            district: context.district,
+            activeCrop: context.activeCrop,
+            farmSizeAcres: context.farmSizeAcres,
+            latestMandiPrice: {
+              modalPrice: context.latestMandiModalPrice,
+            },
+          },
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (reply) {
-            return {
-              id: `msg-${Date.now()}`,
-              sender: 'assistant',
-              text: reply,
-              timestamp: new Date().toISOString(),
-              sources: [
-                {
-                  title: 'Gemini AI Agricultural Model with ICAR Agronomy Knowledge',
-                  organization: 'KrishiConnect AI Provider',
-                },
-              ],
-              suggestedFollowUps: [
-                language === 'hi' ? 'मंडी भाव और शुद्ध मुनाफा जांचें' : 'Check mandi price and net profit',
-                language === 'hi' ? 'मौसम जोखिम सलाह देखें' : 'View weather risk advisory',
-              ],
-            };
-          }
-        }
+        return {
+          id: res.id,
+          sender: 'assistant',
+          text: res.text,
+          timestamp: res.timestamp,
+          sources: res.sources,
+          suggestedFollowUps: res.suggestedFollowUps,
+        };
       } catch {
-        // Fallback to domain RAG
+        // Fallback to local
       }
     }
 
     // Local verified RAG
+    const { generateCopilotResponse } = await import('./copilot-rag');
     return generateCopilotResponse(query, context, language);
   }
 }

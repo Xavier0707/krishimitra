@@ -134,7 +134,7 @@ export default function CropDoctorPage() {
                   पौधे की फोटो (संदर्भ व रिकॉर्ड हेतु)
                 </label>
                 <p className="text-[11px] text-[#718579] mb-1.5 leading-snug">
-                  तस्वीर आपके रिकॉर्ड हेतु सहेजी जाती है। वर्तमान शून्य-लागत मोड में प्रारंभिक मिलान किसान द्वारा चयनित लक्षणों और ICAR/KVK ज्ञानकोश पर आधारित है।
+                  तस्वीर Google Gemma 4 31B विज़न व ICAR/KVK ज्ञानकोश द्वारा विश्लेषित की जाती है। यह प्राथमिक लक्षण विश्लेषण है।
                 </p>
 
                 {selectedImage ? (
@@ -272,6 +272,15 @@ export default function CropDoctorPage() {
                       >
                         लक्षण मिलान स्तर: {diagnosis.confidenceTier}
                       </Badge>
+                      {providerName && (
+                        <Badge
+                          variant="forest"
+                          size="sm"
+                          className="border border-[#DBF2DE]/40 text-[#DBF2DE] text-[10px]"
+                        >
+                          {providerName}
+                        </Badge>
+                      )}
                       {diagnosis.scientificName && (
                         <span className="text-[11px] font-mono italic text-[#DBF2DE]/80">
                           {diagnosis.scientificName}

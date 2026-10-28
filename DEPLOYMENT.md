@@ -16,9 +16,9 @@ Every service chosen operates within an eligible free tier that requires no upfr
 | **Authentication & DB** | Supabase Free Tier | 50,000 monthly active users, 500MB PostgreSQL | **Automatic Local Demo Mode**: full local storage and offline calculations if unconfigured |
 | **Meteorological Data** | Open-Meteo API | Free for non-commercial use (up to 10,000 calls/day) | Built-in cached meteorological observations for Central MP |
 | **Agricultural Mandi Data** | data.gov.in / Agmarknet | Free daily API key registration | Central MP verified APMC benchmark cache (Sehore, Indore, Vidisha, Bhopal) |
-| **AI Decision Support** | Google Gemini 1.5 Flash / Local RAG | Free tier: 15 RPM, 1,500 requests/day | **KrishiConnect Domain Agronomy Engine**: deterministic ICAR & KVK rule-based RAG |
+| **AI Decision Support** | Google Gemma 4 31B (`@google/genai`) / Local RAG | Free tier on Google AI Studio (`gemma-4-31b-it`) | **KrishiMitra Domain Agronomy Engine**: deterministic ICAR & KVK rule-based RAG |
 | **Offline Vault** | IndexedDB & LocalStorage | Browser local storage quota (50MB+) | Offline sync queue with timestamp synchronization |
-| **Testing Suite** | Vitest | Open Source | 26 unit & integration tests passing |
+| **Testing Suite** | Vitest | Open Source | 42 unit & integration tests passing |
 
 ---
 
@@ -68,10 +68,11 @@ KrishiConnect strictly isolates client and server credentials:
 | `OPEN_METEO_BASE_URL` | Server | No (defaults to Open-Meteo free API) | Weather endpoint URL |
 | `DATA_GOV_IN_API_KEY` | **Private (Server ONLY)** | No (Optional) | Free API key from data.gov.in for live Agmarknet feeds |
 | `AI_PROVIDER` | Server | No (`gemini` or `mock`) | AI provider selector |
-| `GEMINI_API_KEY` | **Private (Server ONLY)** | No (Optional) | Google AI Studio free-tier API token |
+| `GEMINI_API_KEY` | **Private (Server ONLY)** | No (Optional) | Google AI Studio API token for Gemma 4 31B |
+| `GEMMA_MODEL` | Server | No (defaults to `gemma-4-31b-it`) | Official model identifier (`gemma-4-31b-it`) |
 
 > [!IMPORTANT]
-> **No Secrets in Frontend Bundles**: `DATA_GOV_IN_API_KEY`, `GEMINI_API_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are never prefixed with `NEXT_PUBLIC_` and are strictly accessed inside server-side route handlers (`/api/mandi`, `/api/copilot`).
+> **No Secrets in Frontend Bundles**: `DATA_GOV_IN_API_KEY`, `GEMINI_API_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are never prefixed with `NEXT_PUBLIC_` or `VITE_` and are strictly accessed inside server-side route handlers (`/api/mandi`, `/api/krishi-copilot`).
 
 ---
 
@@ -105,15 +106,22 @@ Open-Meteo is completely free for non-commercial use up to 10,000 calls per day.
    ```
 4. *If unconfigured:* KrishiConnect automatically falls back to verified Central MP benchmark prices with clear demonstration badges.
 
-### C. Krishi Copilot (Google Gemini Free Tier) — Free
+### C. Krishi Copilot (Google Gemma 4 31B via @google/genai) — Free
 1. Go to [Google AI Studio](https://aistudio.google.com).
-2. Create a free API Key for `gemini-1.5-flash`.
-3. Add to `.env.local`:
+2. Create an API Key.
+3. Add to `.env.local` or deployment secret store:
    ```env
-   AI_PROVIDER=gemini
-   GEMINI_API_KEY=AIzaSy...
+   GEMINI_API_KEY=your_actual_api_key
+   GEMMA_MODEL=gemma-4-31b-it
    ```
-4. *If unconfigured:* KrishiConnect automatically uses its local deterministic agronomic RAG engine containing ICAR-IIWBR and KVK Sehore guidance.
+4. **Model Architecture**:
+   - Model ID: `gemma-4-31b-it` (normalized to `models/gemma-4-31b-it`)
+   - Parameter Count: 30.7 Billion parameters (dense multimodal instruction model)
+   - Context Window: 256K tokens (262,144 tokens)
+   - Official SDK: `@google/genai`
+   - Multimodal: Supports text and image inputs (leaf/crop diagnostic photos)
+   - Strict Grounding: System instructions forbid hallucinating fake mandi prices, weather, or profit guarantees. Real numbers are injected exclusively from Agmarknet and Open-Meteo feeds.
+5. *If unconfigured or quota exceeded:* KrishiMitra automatically falls back to its deterministic agronomy knowledge engine with verified ICAR-IIWBR and KVK Sehore guidance.
 
 ---
 
