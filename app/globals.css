@@ -30,6 +30,10 @@
   --status-warning: #B45309;
   --status-error: #B91C1C;
   --status-info: #1E6B65;
+
+  /* Reliable System Typography Stacks (Zero-Dependency, Vercel-Ready) */
+  --font-manrope: "Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", Arial, sans-serif;
+  --font-dm-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
