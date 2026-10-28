@@ -1,0 +1,88 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        forest: {
+          50: "#f0fdf4",
+          100: "#dcfce7",
+          200: "#bbf7d0",
+          300: "#86efac",
+          400: "#4ade80",
+          500: "#22c55e",
+          600: "#16a34a",
+          700: "#15803d",
+          800: "#14452f",
+          900: "#0d2e1f",
+          950: "#061a11",
+        },
+        agri: {
+          50: "#f4f9f4",
+          100: "#e6f3e6",
+          200: "#c7e4c7",
+          300: "#9ecf9e",
+          400: "#6eb46e",
+          500: "#2e7d32",
+          600: "#256829",
+          700: "#1e5220",
+          800: "#183e1a",
+          900: "#122c13",
+        },
+        earth: {
+          50: "#fdf8f4",
+          100: "#faeee4",
+          200: "#f3dac6",
+          300: "#e8be9e",
+          400: "#d7996f",
+          500: "#b76e39",
+          600: "#9a562d",
+          700: "#7c4225",
+          800: "#643521",
+          900: "#522d1e",
+        },
+        cream: {
+          50: "#ffffff",
+          100: "#fcfbf7",
+          200: "#f8f7f2",
+          300: "#f2f0e8",
+          400: "#e5e2d6",
+        },
+        charcoal: {
+          50: "#f6f6f6",
+          100: "#e7e7e7",
+          200: "#d1d1d1",
+          300: "#b0b0b0",
+          400: "#888888",
+          500: "#6d6d6d",
+          600: "#5d5d5d",
+          700: "#4f4f4f",
+          800: "#2d332f",
+          900: "#1a1f1c",
+          950: "#111412",
+        },
+      },
+      fontFamily: {
+        sans: [
+          "var(--font-inter)",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "'Segoe UI'",
+          "Roboto",
+          "Oxygen",
+          "Ubuntu",
+          "Cantarell",
+          "sans-serif",
+        ],
+      },
+    },
+  },
+  plugins: [],
+};
+export default config;
