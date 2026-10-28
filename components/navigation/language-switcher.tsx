@@ -9,18 +9,18 @@ export function LanguageSwitcher() {
   const { language, setLanguage } = useI18n();
 
   return (
-    <div className="flex items-center gap-1 bg-cream-200 p-1 rounded-lg border border-charcoal-200">
-      <Globe className="w-3.5 h-3.5 text-charcoal-500 ml-1.5 hidden sm:inline-block" />
+    <div className="flex items-center gap-1 bg-[#EAF4E8] p-1 rounded-xl border border-[#DCE9DD]">
+      <Globe className="w-3.5 h-3.5 text-[#52685B] ml-1.5 hidden sm:inline-block" />
       {SUPPORTED_LANGUAGES.map((lang) => {
         const isActive = language === lang.code;
         return (
           <button
             key={lang.code}
             onClick={() => setLanguage(lang.code)}
-            className={`px-2.5 py-1 text-xs font-semibold rounded transition-all ${
+            className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-150 ${
               isActive
-                ? 'bg-forest-800 text-white shadow-xs'
-                : 'text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-300'
+                ? 'bg-[#1F4A3F] text-white shadow-soft'
+                : 'text-[#52685B] hover:text-[#10312B] hover:bg-[#DBF2DE]/60'
             }`}
             aria-label={`Switch to ${lang.label}`}
           >

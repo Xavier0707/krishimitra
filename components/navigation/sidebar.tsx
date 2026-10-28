@@ -36,34 +36,34 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-forest-900 text-white min-h-screen border-r border-forest-950/40 select-none">
+    <aside className="hidden lg:flex flex-col w-64 bg-[#092622] text-white min-h-screen border-r border-[#10312B] select-none shrink-0">
       {/* Brand & Logo */}
-      <div className="p-5 border-b border-forest-800/80">
+      <div className="p-5 border-b border-[#10312B]">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-agri-500/20 border border-agri-400/30 flex items-center justify-center text-agri-400 group-hover:scale-105 transition-transform">
-            <Sprout className="w-6 h-6 text-agri-400" />
+          <div className="w-10 h-10 rounded-xl bg-[#1F4A3F] border border-[#4E7967]/40 flex items-center justify-center text-[#DBF2DE] group-hover:scale-105 transition-transform shadow-soft">
+            <Sprout className="w-6 h-6 text-[#DBF2DE]" />
           </div>
           <div>
             <span className="font-extrabold text-base tracking-tight text-white block">
-              KrishiConnect <span className="text-agri-400 font-black">AI</span>
+              KrishiConnect <span className="text-[#9EC2A9] font-black">AI</span>
             </span>
-            <span className="text-[11px] text-forest-300 font-medium block">
-              मध्य प्रदेश कृषि निर्णय तंत्र
+            <span className="text-[11px] text-[#9EC2A9]/80 font-medium block">
+              किसान निर्णय मंच
             </span>
           </div>
         </Link>
-        <div className="mt-3 flex items-center justify-between">
-          <Badge variant="demo" size="sm">
+        <div className="mt-3.5 flex items-center justify-between">
+          <Badge variant="mint" size="sm" className="bg-[#1F4A3F] text-[#DBF2DE] border-[#4E7967]">
             डेमो मोड (सत्यापित)
           </Badge>
-          <span className="text-[10px] text-forest-400 flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3 text-agri-400" /> MP Agmarknet
+          <span className="text-[10px] text-[#9EC2A9]/70 flex items-center gap-1 font-mono">
+            <ShieldCheck className="w-3 h-3 text-[#9EC2A9]" /> MP Agmarknet
           </span>
         </div>
       </div>
 
       {/* Nav List */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -72,15 +72,15 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-forest-800 text-white shadow-sm border border-forest-700/60 font-semibold'
-                  : 'text-forest-200/90 hover:bg-forest-800/50 hover:text-white'
+                  ? 'bg-[#1F4A3F] text-white shadow-soft border border-[#4E7967]/50 font-semibold'
+                  : 'text-[#9EC2A9]/80 hover:bg-[#10312B] hover:text-[#DBF2DE]'
               }`}
             >
               <Icon
-                className={`w-4 h-4 shrink-0 ${
-                  isActive ? 'text-agri-400' : 'text-forest-400'
+                className={`w-4 h-4 shrink-0 transition-colors ${
+                  isActive ? 'text-[#DBF2DE]' : 'text-[#9EC2A9]/70'
                 }`}
               />
               <span className="truncate">{item.label}</span>
@@ -90,16 +90,19 @@ export function Sidebar() {
       </nav>
 
       {/* Active Farmer Profile Card in Sidebar Footer */}
-      <div className="p-4 border-t border-forest-800/80 bg-forest-950/40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-agri-600/30 border border-agri-500/40 flex items-center justify-center text-agri-300 font-bold text-sm">
+      <div className="p-4 border-t border-[#10312B] bg-[#092622]/90">
+        <Link
+          href="/dashboard/profile"
+          className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#10312B] transition-colors"
+        >
+          <div className="w-9 h-9 rounded-xl bg-[#1F4A3F] border border-[#4E7967]/40 flex items-center justify-center text-[#DBF2DE] font-bold text-xs">
             RP
           </div>
           <div className="truncate flex-1">
-            <p className="text-xs font-semibold text-white truncate">रामेश पटेल</p>
-            <p className="text-[11px] text-forest-300 truncate">सीहोर, म.प्र. (8 एकड़)</p>
+            <p className="text-xs font-bold text-white truncate">रामेश पटेल</p>
+            <p className="text-[11px] text-[#9EC2A9]/80 truncate">सीहोर, म.प्र. (8 एकड़)</p>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
   );

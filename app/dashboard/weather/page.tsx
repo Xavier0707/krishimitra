@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n/context';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +12,7 @@ import {
   Droplets,
   Wind,
   Thermometer,
-  ShieldAlert,
   ShieldCheck,
-  Calendar,
   AlertTriangle,
   RefreshCw,
   Sun,
@@ -53,37 +52,32 @@ export default function WeatherPage() {
 
   const activeDay: WeatherDayForecast | undefined = weather?.daily[selectedDay];
 
-  const getWeatherIcon = (iconName: string) => {
+  const getWeatherIcon = (iconName: string, isSelected: boolean) => {
     switch (iconName) {
       case 'CloudRain':
-        return <CloudRain className="w-8 h-8 text-sky-600" />;
+        return <CloudRain className={`w-8 h-8 ${isSelected ? 'text-[#DBF2DE]' : 'text-[#1F4A3F]'}`} />;
       case 'CloudLightning':
-        return <CloudLightning className="w-8 h-8 text-amber-500" />;
+        return <CloudLightning className={`w-8 h-8 ${isSelected ? 'text-[#DBF2DE]' : 'text-[#B45309]'}`} />;
       case 'CloudFog':
-        return <CloudFog className="w-8 h-8 text-gray-500" />;
+        return <CloudFog className={`w-8 h-8 ${isSelected ? 'text-[#DBF2DE]' : 'text-[#52685B]'}`} />;
       default:
-        return <Sun className="w-8 h-8 text-amber-500" />;
+        return <Sun className={`w-8 h-8 ${isSelected ? 'text-[#DBF2DE]' : 'text-[#B45309]'}`} />;
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-forest-950 flex items-center gap-2">
-            <CloudSun className="w-6 h-6 text-forest-700" />
-            <span>{t.weather.title}</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-charcoal-600 mt-0.5">
-            {t.weather.subtitle}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge variant={weather?.isLive ? 'agri' : 'demo'}>
+      <PageHeader
+        title={t.weather.title}
+        subtitle={t.weather.subtitle}
+        icon={<CloudSun className="w-5 h-5 text-[#1F4A3F]" />}
+        badge={
+          <Badge variant={weather?.isLive ? 'mint' : 'demo'}>
             {weather?.isLive ? 'Open-Meteo Live API' : 'ऑफ़लाइन कैश'}
           </Badge>
+        }
+        actions={
           <Button
             variant="outline"
             size="sm"
@@ -93,12 +87,12 @@ export default function WeatherPage() {
             <RefreshCw className="w-3.5 h-3.5" />
             <span>रिफ्रेश</span>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* District Selector & Coordinates */}
       <Card>
-        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="w-full sm:w-72">
             <Select
               label="खेत का जिला चुनें"
@@ -113,16 +107,16 @@ export default function WeatherPage() {
             </Select>
           </div>
 
-          <div className="text-xs text-charcoal-600 space-y-0.5">
+          <div className="text-xs text-[#52685B] space-y-1">
             <p>
               अक्षांश व देशांतर:{' '}
-              <span className="font-mono font-medium text-charcoal-900">
+              <span className="font-mono font-bold text-[#10312B]">
                 {weather?.latitude.toFixed(4)}° N, {weather?.longitude.toFixed(4)}° E
               </span>
             </p>
             <p>
               अंतिम अद्यतन:{' '}
-              <span className="font-medium">
+              <span className="font-medium text-[#10312B]">
                 {weather ? new Date(weather.retrievedAt).toLocaleTimeString('hi-IN') : '...'}
               </span>
             </p>
@@ -136,15 +130,15 @@ export default function WeatherPage() {
           {weather.cropRisks.map((risk) => (
             <div
               key={risk.id}
-              className={`p-4 rounded-xl border flex items-start gap-3 shadow-xs ${
+              className={`p-4 sm:p-5 rounded-2xl border flex items-start gap-3.5 shadow-soft ${
                 risk.severity === 'critical'
-                  ? 'bg-rose-50 border-rose-300 text-rose-900'
-                  : 'bg-amber-50 border-amber-300 text-amber-900'
+                  ? 'bg-[#FEE2E2] border-[#FECACA] text-[#991B1B]'
+                  : 'bg-[#FEF3C7] border-[#FDE68A] text-[#92400E]'
               }`}
             >
               <AlertTriangle
                 className={`w-5 h-5 shrink-0 mt-0.5 ${
-                  risk.severity === 'critical' ? 'text-rose-600' : 'text-amber-600'
+                  risk.severity === 'critical' ? 'text-[#B91C1C]' : 'text-[#B45309]'
                 }`}
               />
               <div className="space-y-1">
@@ -157,7 +151,7 @@ export default function WeatherPage() {
                     {risk.severity === 'critical' ? 'गंभीर चेतावनी' : 'सतर्कता'}
                   </Badge>
                 </div>
-                <p className="text-xs leading-relaxed opacity-90">{risk.messageHi}</p>
+                <p className="text-xs leading-relaxed opacity-95">{risk.messageHi}</p>
                 <div className="pt-1 text-xs font-semibold">
                   <span>उपाय: </span>
                   <span>{risk.preventiveActionHi}</span>
@@ -168,78 +162,82 @@ export default function WeatherPage() {
         </div>
       )}
 
-      {/* Current Conditions Card */}
+      {/* Current Conditions 4 Cards */}
       {weather && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-gradient-to-br from-white to-forest-50/40 border-forest-200">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4.5">
+          <Card className="bg-white border-[#DCE9DD]">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-charcoal-500">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#52685B]">
                   वर्तमान तापमान
                 </span>
-                <div className="text-3xl font-black text-forest-950 mt-1">
+                <div className="text-3xl font-black text-[#10312B] mt-1">
                   {weather.current.temp}°C
                 </div>
-                <p className="text-xs text-charcoal-600 mt-0.5">
+                <p className="text-xs text-[#52685B] mt-0.5">
                   महसूस: {weather.current.apparentTemp}°C
                 </p>
               </div>
-              <Thermometer className="w-10 h-10 text-forest-700 opacity-80" />
+              <div className="w-11 h-11 rounded-2xl bg-[#EAF4E8] text-[#1F4A3F] flex items-center justify-center">
+                <Thermometer className="w-6 h-6" />
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white border-[#DCE9DD]">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-charcoal-500">
-                  सापेक्ष आर्द्रता (Humidity)
+                <span className="text-xs font-bold uppercase tracking-wider text-[#52685B]">
+                  सापेक्ष आर्द्रता
                 </span>
-                <div className="text-3xl font-black text-forest-950 mt-1">
+                <div className="text-3xl font-black text-[#10312B] mt-1">
                   {weather.current.relativeHumidity}%
                 </div>
-                <p className="text-xs text-charcoal-600 mt-0.5">
-                  {weather.current.relativeHumidity > 75
-                    ? 'फंगस जोखिम अधिक'
-                    : 'सामान्य अनुकूल'}
+                <p className="text-xs text-[#52685B] mt-0.5">
+                  {weather.current.relativeHumidity > 75 ? 'फंगस जोखिम अधिक' : 'सामान्य अनुकूल'}
                 </p>
               </div>
-              <Droplets className="w-10 h-10 text-sky-600 opacity-80" />
+              <div className="w-11 h-11 rounded-2xl bg-[#EAF4E8] text-[#1F4A3F] flex items-center justify-center">
+                <Droplets className="w-6 h-6" />
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white border-[#DCE9DD]">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-charcoal-500">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#52685B]">
                   हवा की गति
                 </span>
-                <div className="text-3xl font-black text-forest-950 mt-1">
-                  {weather.current.windSpeedKmh} <span className="text-sm font-normal">km/h</span>
+                <div className="text-3xl font-black text-[#10312B] mt-1">
+                  {weather.current.windSpeedKmh} <span className="text-sm font-normal text-[#52685B]">km/h</span>
                 </div>
-                <p className="text-xs text-charcoal-600 mt-0.5">
-                  {weather.current.windSpeedKmh > 20
-                    ? 'छिड़काव न करें (दवा उड़ेगी)'
-                    : 'छिड़काव हेतु सुरक्षित'}
+                <p className="text-xs text-[#52685B] mt-0.5">
+                  {weather.current.windSpeedKmh > 20 ? 'छिड़काव न करें' : 'छिड़काव हेतु सुरक्षित'}
                 </p>
               </div>
-              <Wind className="w-10 h-10 text-teal-600 opacity-80" />
+              <div className="w-11 h-11 rounded-2xl bg-[#EAF4E8] text-[#1F4A3F] flex items-center justify-center">
+                <Wind className="w-6 h-6" />
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white border-[#DCE9DD]">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-charcoal-500">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#52685B]">
                   वर्तमान स्थिति
                 </span>
-                <div className="text-lg font-black text-forest-950 mt-1">
+                <div className="text-lg font-black text-[#10312B] mt-1">
                   {weather.current.weatherDescription}
                 </div>
-                <p className="text-xs text-charcoal-600 mt-0.5">
-                  बारिश: {weather.current.precipitationMm} mm
+                <p className="text-xs text-[#52685B] mt-0.5">
+                  वर्षा: {weather.current.precipitationMm} mm
                 </p>
               </div>
-              <CloudSun className="w-10 h-10 text-amber-500 opacity-80" />
+              <div className="w-11 h-11 rounded-2xl bg-[#EAF4E8] text-[#1F4A3F] flex items-center justify-center">
+                <CloudSun className="w-6 h-6" />
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -249,13 +247,13 @@ export default function WeatherPage() {
       <Card>
         <CardHeader>
           <div>
-            <CardTitle className="text-base">7-दिवसीय कृषि मौसम पूर्वानुमान</CardTitle>
+            <CardTitle className="text-base text-[#10312B]">7-दिवसीय कृषि मौसम पूर्वानुमान</CardTitle>
             <CardDescription>
               किसी भी दिन पर क्लिक करके तापमान और बारिश का विस्तृत कृषि प्रभाव देखें
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="p-4">
+        <CardContent className="p-5">
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
             {weather?.daily.map((day, idx) => {
               const isSelected = selectedDay === idx;
@@ -266,15 +264,15 @@ export default function WeatherPage() {
                 <button
                   key={day.date}
                   onClick={() => setSelectedDay(idx)}
-                  className={`p-3 rounded-xl border text-center transition-all ${
+                  className={`p-3.5 rounded-2xl border text-center transition-all duration-150 ${
                     isSelected
-                      ? 'bg-forest-800 text-white border-forest-900 shadow-sm'
-                      : 'bg-white hover:bg-cream-100 border-charcoal-200 text-charcoal-900'
+                      ? 'bg-[#1F4A3F] text-white border-[#10312B] shadow-card'
+                      : 'bg-white hover:bg-[#EAF4E8]/60 border-[#DCE9DD] text-[#10312B]'
                   }`}
                 >
                   <span
                     className={`text-[11px] font-bold block ${
-                      isSelected ? 'text-forest-200' : 'text-charcoal-500'
+                      isSelected ? 'text-[#DBF2DE]' : 'text-[#52685B]'
                     }`}
                   >
                     {idx === 0 ? 'आज' : dayName}
@@ -282,25 +280,31 @@ export default function WeatherPage() {
                   <span className="text-xs font-mono font-medium block mt-0.5">
                     {day.date.slice(5)}
                   </span>
-                  <div className="my-2 flex justify-center">
-                    {getWeatherIcon(day.iconName)}
+                  <div className="my-2.5 flex justify-center">
+                    {getWeatherIcon(day.iconName, isSelected)}
                   </div>
                   <div className="text-sm font-black">
                     {Math.round(day.tempMax)}°{' '}
                     <span
                       className={`text-xs font-normal ${
-                        isSelected ? 'text-forest-200' : 'text-charcoal-500'
+                        isSelected ? 'text-[#DBF2DE]' : 'text-[#718579]'
                       }`}
                     >
                       / {Math.round(day.tempMin)}°
                     </span>
                   </div>
                   {day.precipitationMm > 0 ? (
-                    <span className="inline-block mt-1 text-[10px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">
+                    <span className={`inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      isSelected
+                        ? 'bg-[#DBF2DE] text-[#092622]'
+                        : 'bg-[#DBF2DE] text-[#10312B]'
+                    }`}>
                       {day.precipitationMm} mm
                     </span>
                   ) : (
-                    <span className="inline-block mt-1 text-[10px] text-charcoal-400">
+                    <span className={`inline-block mt-1.5 text-[10px] ${
+                      isSelected ? 'text-[#DBF2DE]/80' : 'text-[#718579]'
+                    }`}>
                       शुष्क (0 mm)
                     </span>
                   )}
@@ -311,11 +315,11 @@ export default function WeatherPage() {
 
           {/* Selected Day Expanded Detail Box */}
           {activeDay && (
-            <div className="mt-5 p-4 rounded-xl bg-cream-100 border border-charcoal-200 space-y-2 text-xs">
-              <h4 className="font-bold text-sm text-charcoal-900">
+            <div className="mt-5 p-4 sm:p-5 rounded-2xl bg-[#EAF4E8] border border-[#DCE9DD] space-y-2 text-xs">
+              <h4 className="font-bold text-sm text-[#10312B]">
                 कृषि कार्य परामर्श ({activeDay.date}):
               </h4>
-              <p className="text-charcoal-700 leading-relaxed">
+              <p className="text-[#52685B] leading-relaxed">
                 अधिकतम तापमान <strong>{activeDay.tempMax}°C</strong> और न्यूनतम तापमान{' '}
                 <strong>{activeDay.tempMin}°C</strong> रहने का अनुमान है। हवा की गति लगभग{' '}
                 <strong>{activeDay.maxWindSpeedKmh} किमी/घंटा</strong> रहेगी।
@@ -327,8 +331,8 @@ export default function WeatherPage() {
           )}
         </CardContent>
         <CardFooter>
-          <div className="text-[11px] text-charcoal-500 flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-agri-600" />
+          <div className="text-[11px] text-[#52685B] flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#1F4A3F]" />
             <span>
               यह पूर्वानुमान ओपन-मेटियो (Open-Meteo) गणितीय मौसम मॉडल पर आधारित है। इसे
               सरकारी मौसम विभाग (IMD) की आधिकारिक आपदा चेतावनी का विकल्प न समझें।

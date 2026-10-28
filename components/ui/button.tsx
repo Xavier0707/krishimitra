@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'agri' | 'danger';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'mint' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
 }
@@ -11,27 +11,27 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading = false, children, disabled, ...props }, ref) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]';
+      'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F4A3F] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] select-none';
 
     const variantStyles = {
       primary:
-        'bg-forest-800 text-white hover:bg-forest-900 focus-visible:ring-forest-700 shadow-sm',
-      agri:
-        'bg-agri-600 text-white hover:bg-agri-700 focus-visible:ring-agri-500 shadow-sm',
+        'bg-[#1F4A3F] text-white hover:bg-[#10312B] active:bg-[#092622] shadow-[0_2px_8px_rgba(31,74,63,0.18)] hover:shadow-[0_4px_12px_rgba(16,49,43,0.25)]',
       secondary:
-        'bg-cream-300 text-charcoal-900 hover:bg-cream-400 focus-visible:ring-cream-400',
+        'bg-[#EAF4E8] text-[#10312B] hover:bg-[#DBF2DE] border border-[#DCE9DD] active:bg-[#C8E8CC]',
       outline:
-        'border border-charcoal-200 bg-white text-charcoal-900 hover:bg-cream-100 focus-visible:ring-forest-700',
+        'border border-[#DCE9DD] bg-white text-[#10312B] hover:bg-[#F3F8F2] hover:border-[#C4DAC7]',
       ghost:
-        'text-charcoal-800 hover:bg-cream-200 focus-visible:ring-forest-700',
+        'text-[#10312B] hover:bg-[#EAF4E8]',
+      mint:
+        'bg-[#DBF2DE] text-[#092622] hover:bg-[#C4E9C8] border border-[#9EC2A9]/40 font-semibold shadow-xs',
       danger:
-        'bg-rose-700 text-white hover:bg-rose-800 focus-visible:ring-rose-600 shadow-sm',
+        'bg-[#B91C1C] text-white hover:bg-[#991B1B] shadow-xs',
     };
 
     const sizeStyles = {
       sm: 'text-xs px-3 py-1.5 h-8 gap-1.5',
       md: 'text-sm px-4 py-2 h-10 gap-2',
-      lg: 'text-base px-6 py-3 h-12 gap-2.5 font-semibold',
+      lg: 'text-base px-6 py-2.5 h-12 gap-2.5 font-semibold',
     };
 
     return (

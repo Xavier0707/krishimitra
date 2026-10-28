@@ -13,7 +13,7 @@ export default function DashboardLayout({
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F8F9F5] flex">
+    <div className="min-h-screen bg-[#F3F8F2] text-[#10312B] flex">
       {/* Desktop Sidebar */}
       <Sidebar />
 
@@ -29,7 +29,7 @@ export default function DashboardLayout({
           isMobileNavOpen={isMobileNavOpen}
           onToggleMobileNav={() => setIsMobileNavOpen((prev) => !prev)}
         />
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
           {children}
         </main>
       </div>

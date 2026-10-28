@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n/context';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -13,18 +14,15 @@ import {
   Truck,
   ArrowRight,
   ShieldCheck,
-  Scale,
-  DollarSign,
-  Info,
-  CheckCircle2,
   RefreshCw,
+  Scale,
 } from 'lucide-react';
 import { calculateNetReturn } from '@/lib/mandi/profit-calculator';
-import { MP_COMMODITIES, MP_MANDIS } from '@/lib/mandi/mp-mandis-data';
+import { MP_COMMODITIES } from '@/lib/mandi/mp-mandis-data';
 import { MandiPriceRecord, NetReturnBreakdown } from '@/lib/types';
 
 export default function MandiRadarPage() {
-  const { t, formatCurrency, formatNumber } = useI18n();
+  const { t, formatCurrency } = useI18n();
 
   // Filter states
   const [selectedCommodity, setSelectedCommodity] = useState<string>('Soybean');
@@ -101,27 +99,20 @@ export default function MandiRadarPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-forest-950 flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-agri-600" />
-            <span>{t.mandi.title}</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-charcoal-600 mt-0.5">
-            {t.mandi.subtitle}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge variant={isLiveFeed ? 'agri' : 'demo'}>
+      <PageHeader
+        title={t.mandi.title}
+        subtitle={t.mandi.subtitle}
+        icon={<TrendingUp className="w-5 h-5 text-[#1F4A3F]" />}
+        badge={
+          <Badge variant={isLiveFeed ? 'mint' : 'demo'}>
             {isLiveFeed ? 'Agmarknet Live API' : 'सत्यापित एमपी मंडी बेंचमार्क'}
           </Badge>
-        </div>
-      </div>
+        }
+      />
 
       {/* Filter Row */}
       <Card>
-        <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <CardContent className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Select
             label="फसल / जिंस (Commodity)"
             value={selectedCommodity}
@@ -154,14 +145,14 @@ export default function MandiRadarPage() {
             <Button
               variant="outline"
               size="md"
-              className="w-full gap-2 text-charcoal-700"
+              className="w-full gap-2 text-[#52685B] hover:text-[#10312B]"
               onClick={() => {
                 setSelectedDistrict('Sehore');
                 setSelectedCommodity('Soybean');
               }}
             >
-              <RefreshCw className="w-4 h-4" />
-              <span>डिफ़ॉल्ट रिसेट करें</span>
+              <RefreshCw className="w-4 h-4 text-[#52685B]" />
+              <span>डिफ़ॉल्ट रीसेट करें</span>
             </Button>
           </div>
         </CardContent>
@@ -174,7 +165,7 @@ export default function MandiRadarPage() {
           <Card>
             <CardHeader>
               <div>
-                <CardTitle className="text-base">
+                <CardTitle className="text-base text-[#10312B]">
                   मंडी भाव उद्धरण ({selectedCommodity})
                 </CardTitle>
                 <CardDescription>
@@ -184,17 +175,17 @@ export default function MandiRadarPage() {
             </CardHeader>
             <CardContent className="p-0 overflow-x-auto">
               {loadingPrices ? (
-                <div className="p-8 text-center text-charcoal-500 text-sm">
+                <div className="p-8 text-center text-[#52685B] text-sm">
                   मंडी भाव लोड हो रहे हैं...
                 </div>
               ) : mandiPrices.length === 0 ? (
-                <div className="p-8 text-center text-charcoal-500 text-sm">
+                <div className="p-8 text-center text-[#52685B] text-sm">
                   चयनित फिल्टर के लिए कोई रिकॉर्ड नहीं मिला। कृपया दूसरा जिला चुनें।
                 </div>
               ) : (
                 <table className="w-full text-left border-collapse text-sm">
                   <thead>
-                    <tr className="bg-cream-100/70 border-b border-charcoal-200 text-xs font-bold text-charcoal-700 uppercase tracking-wider">
+                    <tr className="bg-[#EAF4E8]/60 border-b border-[#DCE9DD] text-xs font-bold text-[#52685B] uppercase tracking-wider">
                       <th className="py-3 px-4">मंडी</th>
                       <th className="py-3 px-3 text-right">न्यूनतम</th>
                       <th className="py-3 px-3 text-right">मॉडल भाव</th>
@@ -202,33 +193,33 @@ export default function MandiRadarPage() {
                       <th className="py-3 px-3 text-center">कार्रवाई</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-charcoal-100 text-charcoal-800">
+                  <tbody className="divide-y divide-[#DCE9DD]/70 text-[#10312B]">
                     {mandiPrices.map((record) => (
                       <tr
                         key={record.id}
-                        className="hover:bg-cream-50/70 transition-colors"
+                        className="hover:bg-[#EAF4E8]/40 transition-colors"
                       >
                         <td className="py-3 px-4">
-                          <span className="font-bold text-charcoal-900 block">
+                          <span className="font-bold text-[#10312B] block">
                             {record.marketName}
                           </span>
-                          <span className="text-[11px] text-charcoal-500">
+                          <span className="text-[11px] text-[#52685B]">
                             {record.district} • {record.variety}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-right text-charcoal-600">
+                        <td className="py-3 px-3 text-right text-[#52685B]">
                           {formatCurrency(record.minPrice)}
                         </td>
-                        <td className="py-3 px-3 text-right font-black text-agri-700 text-base">
+                        <td className="py-3 px-3 text-right font-black text-[#10312B] text-base">
                           {formatCurrency(record.modalPrice)}
                         </td>
-                        <td className="py-3 px-3 text-right text-charcoal-600">
+                        <td className="py-3 px-3 text-right text-[#52685B]">
                           {formatCurrency(record.maxPrice)}
                         </td>
                         <td className="py-3 px-3 text-center">
                           <button
                             onClick={() => setCalcPrice(record.modalPrice)}
-                            className="px-2 py-1 text-[11px] font-semibold rounded bg-cream-200 hover:bg-forest-800 hover:text-white text-forest-900 transition-colors"
+                            className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-[#EAF4E8] hover:bg-[#1F4A3F] hover:text-white text-[#10312B] transition-colors border border-[#DCE9DD]"
                           >
                             कैलकुलेटर में लें
                           </button>
@@ -240,8 +231,8 @@ export default function MandiRadarPage() {
               )}
             </CardContent>
             <CardFooter>
-              <div className="text-[11px] text-charcoal-500 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-agri-600" />
+              <div className="text-[11px] text-[#52685B] flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#1F4A3F]" />
                 <span>
                   न्यूनतम, मॉडल व अधिकतम भाव में अंतर रहता है। मॉडल भाव सर्वाधिक सौदों का
                   प्रतिनिधित्व करता है।
@@ -251,9 +242,9 @@ export default function MandiRadarPage() {
           </Card>
 
           {/* Mandi Distance Comparison Tip */}
-          <div className="p-4 bg-cream-100 rounded-xl border border-charcoal-200/80 text-xs text-charcoal-700 space-y-1.5">
-            <h4 className="font-bold text-charcoal-900 flex items-center gap-1.5">
-              <Truck className="w-4 h-4 text-forest-800" />
+          <div className="p-4 sm:p-5 bg-[#EAF4E8] rounded-2xl border border-[#DCE9DD] text-xs text-[#52685B] space-y-2">
+            <h4 className="font-bold text-[#10312B] flex items-center gap-2">
+              <Truck className="w-4 h-4 text-[#1F4A3F]" />
               <span>मंडी चयन सुझाव:</span>
             </h4>
             <p className="leading-relaxed">
@@ -266,21 +257,21 @@ export default function MandiRadarPage() {
 
         {/* Net Return Calculator (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <Card className="border-forest-700/30 shadow-md">
-            <CardHeader className="bg-forest-900 text-white">
+          <Card className="border-[#DCE9DD] shadow-card">
+            <CardHeader className="bg-gradient-to-r from-[#10312B] to-[#1F4A3F] text-white">
               <div>
                 <CardTitle className="text-white text-base flex items-center gap-2">
-                  <Calculator className="w-5 h-5 text-agri-400" />
+                  <Calculator className="w-5 h-5 text-[#DBF2DE]" />
                   <span>{t.mandi.calculatorTitle}</span>
                 </CardTitle>
-                <CardDescription className="text-forest-200 text-xs mt-0.5">
+                <CardDescription className="text-[#DBF2DE]/80 text-xs mt-0.5">
                   सकल बिक्री से सभी मंडी खर्च घटाकर शुद्ध हाथ में आने वाली राशि
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent className="p-5 space-y-4">
               {/* Formula note */}
-              <div className="p-2.5 bg-cream-100 rounded-lg text-[11px] font-mono text-charcoal-700 border border-charcoal-200">
+              <div className="p-3 bg-[#EAF4E8] rounded-xl text-[11px] font-mono text-[#10312B] border border-[#DCE9DD]">
                 {t.mandi.calcExplainer}
               </div>
 
@@ -313,8 +304,8 @@ export default function MandiRadarPage() {
                 helperText="चयनित मंडी का मॉडल भाव या आपकी अपनी उम्मीद"
               />
 
-              <div className="pt-2 border-t border-charcoal-100 space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-charcoal-700 block">
+              <div className="pt-2 border-t border-[#DCE9DD] space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#52685B] block">
                   परिवहन एवं मंडी विपणन खर्च (कटौतियां)
                 </span>
 
@@ -355,31 +346,31 @@ export default function MandiRadarPage() {
 
               {/* Breakdown Output Box */}
               {calcResult && (
-                <div className="p-4 rounded-xl bg-forest-50 border border-forest-200/80 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-charcoal-700">
+                <div className="p-4 rounded-xl bg-[#EAF4E8] border border-[#DCE9DD] space-y-2.5">
+                  <div className="flex items-center justify-between text-xs text-[#52685B]">
                     <span>सकल बिक्री (Gross Sales):</span>
-                    <span className="font-semibold text-charcoal-900">
+                    <span className="font-semibold text-[#10312B]">
                       {formatCurrency(calcResult.grossRevenue)}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-rose-700">
-                    <span>कुल मंडी खर्च व भाड़ा (−):</span>
+                  <div className="flex items-center justify-between text-xs text-[#B91C1C]">
+                    <span>कुल मंडी खर्च व भाड़ा (−):</span>
                     <span className="font-semibold">
                       −{formatCurrency(calcResult.totalMarketingExpenses)}
                     </span>
                   </div>
 
-                  <div className="pt-2 border-t border-forest-200 flex items-baseline justify-between">
+                  <div className="pt-2 border-t border-[#DCE9DD] flex items-baseline justify-between">
                     <div>
-                      <span className="text-xs font-bold text-forest-900 uppercase block">
+                      <span className="text-xs font-bold text-[#10312B] uppercase block">
                         हाथ में शुद्ध आय (In-Hand):
                       </span>
-                      <span className="text-[11px] text-forest-700">
+                      <span className="text-[11px] text-[#52685B]">
                         प्रभावी भाव: {formatCurrency(Math.round(calcResult.effectivePricePerQuintal))}/क्विंटल
                       </span>
                     </div>
-                    <span className="text-2xl font-black text-forest-900">
+                    <span className="text-2xl font-black text-[#10312B]">
                       {formatCurrency(calcResult.netProceeds)}
                     </span>
                   </div>

@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n/context';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Sprout, ArrowRight } from 'lucide-react';
+import { Sprout } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,24 +30,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9F5] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F3F8F2] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link href="/" className="inline-flex items-center gap-2 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-forest-800 text-agri-400 flex items-center justify-center">
-            <Sprout className="w-6 h-6" />
+        <Link href="/" className="inline-flex items-center gap-2.5 mb-4">
+          <div className="w-10 h-10 rounded-2xl bg-[#1F4A3F] text-[#DBF2DE] flex items-center justify-center shadow-soft">
+            <Sprout className="w-6 h-6 text-[#DBF2DE]" />
           </div>
-          <span className="font-extrabold text-xl text-forest-950">KrishiConnect AI</span>
+          <span className="font-extrabold text-xl text-[#10312B]">KrishiConnect AI</span>
         </Link>
-        <h2 className="text-2xl font-black text-charcoal-900 tracking-tight">
+        <h2 className="text-2xl font-black text-[#10312B] tracking-tight">
           नया किसान खाता बनाएं
         </h2>
-        <p className="mt-1 text-xs text-charcoal-600">
+        <p className="mt-1 text-xs text-[#52685B]">
           मध्य प्रदेश के किसानों के लिए निःशुल्क निर्णय सहायता मंच
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <Card className="shadow-lg border-charcoal-200">
+        <Card className="shadow-card border-[#DCE9DD]">
           <CardContent className="p-6 space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
@@ -102,7 +102,7 @@ export default function RegisterPage() {
 
               <Button
                 type="submit"
-                variant="agri"
+                variant="primary"
                 size="md"
                 className="w-full mt-2"
                 isLoading={loading}
@@ -111,11 +111,11 @@ export default function RegisterPage() {
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="bg-cream-50 text-xs text-charcoal-600 flex justify-center">
+          <CardFooter className="bg-[#EAF4E8]/50 text-xs text-[#52685B] flex justify-center border-t border-[#DCE9DD]">
             <span>पहले से खाता है? </span>
             <Link
               href="/auth/login"
-              className="ml-1 font-bold text-forest-800 hover:underline"
+              className="ml-1 font-bold text-[#1F4A3F] hover:underline"
             >
               लॉग इन करें
             </Link>

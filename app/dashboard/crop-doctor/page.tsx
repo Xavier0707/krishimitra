@@ -3,21 +3,18 @@
 import React, { useState } from 'react';
 import { useI18n } from '@/lib/i18n/context';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import {
   Stethoscope,
-  Upload,
   X,
   AlertTriangle,
-  ShieldCheck,
   Leaf,
   Bug,
   CheckCircle2,
-  HelpCircle,
   Camera,
-  Info,
 } from 'lucide-react';
 import { CropSymptomDiagnosis } from '@/lib/types';
 
@@ -95,28 +92,23 @@ export default function CropDoctorPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-forest-950 flex items-center gap-2">
-            <Stethoscope className="w-6 h-6 text-agri-600" />
-            <span>{t.cropDoctor.title}</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-charcoal-600 mt-0.5">
-            {t.cropDoctor.subtitle}
-          </p>
-        </div>
-
-        <Badge variant="demo">
-          प्रारंभिक एआई सहायता (वैज्ञानिक मार्गदर्शन)
-        </Badge>
-      </div>
+      <PageHeader
+        title={t.cropDoctor.title}
+        subtitle={t.cropDoctor.subtitle}
+        icon={<Stethoscope className="w-5 h-5 text-[#1F4A3F]" />}
+        badge={
+          <Badge variant="mint">
+            प्रारंभिक एआई सहायता (वैज्ञानिक मार्गदर्शन)
+          </Badge>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Input Form & Image Upload (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">फसल व लक्षण प्रविष्टि</CardTitle>
+              <CardTitle className="text-base text-[#10312B]">फसल व लक्षण प्रविष्टि</CardTitle>
               <CardDescription>
                 खेत में पौधे की स्थिति का विवरण भरें
               </CardDescription>
@@ -138,12 +130,12 @@ export default function CropDoctorPage() {
 
               {/* Photo Upload Zone */}
               <div>
-                <label className="block text-xs font-semibold text-charcoal-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-[#52685B] uppercase tracking-wider mb-1.5">
                   पौधे की फोटो (वैकल्पिक परंतु अनुशंसित)
                 </label>
 
                 {selectedImage ? (
-                  <div className="relative rounded-xl border border-charcoal-300 overflow-hidden bg-cream-100">
+                  <div className="relative rounded-2xl border border-[#DCE9DD] overflow-hidden bg-[#F3F8F2]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={selectedImage}
@@ -152,19 +144,19 @@ export default function CropDoctorPage() {
                     />
                     <button
                       onClick={removeImage}
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-charcoal-900/80 text-white hover:bg-rose-700 transition-colors"
+                      className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-[#092622]/80 text-white hover:bg-[#B91C1C] transition-colors"
                       aria-label="Remove image"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center h-36 border-2 border-dashed border-charcoal-300 hover:border-forest-600 rounded-xl cursor-pointer bg-cream-50 hover:bg-cream-100 transition-colors p-4 text-center">
-                    <Camera className="w-8 h-8 text-charcoal-400 mb-2" />
-                    <span className="text-xs font-semibold text-forest-800">
+                  <label className="flex flex-col items-center justify-center h-36 border-2 border-dashed border-[#DCE9DD] hover:border-[#1F4A3F] rounded-2xl cursor-pointer bg-[#F3F8F2] hover:bg-[#EAF4E8] transition-colors p-4 text-center">
+                    <Camera className="w-8 h-8 text-[#52685B] mb-2" />
+                    <span className="text-xs font-semibold text-[#10312B]">
                       फोटो खींचें या गैलरी से चुनें
                     </span>
-                    <span className="text-[11px] text-charcoal-500 mt-0.5">
+                    <span className="text-[11px] text-[#718579] mt-0.5">
                       JPG, PNG अधिकतम 5MB तक
                     </span>
                     <input
@@ -179,7 +171,7 @@ export default function CropDoctorPage() {
 
               {/* Description Input */}
               <div>
-                <label className="block text-xs font-semibold text-charcoal-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-[#52685B] uppercase tracking-wider mb-1.5">
                   {t.cropDoctor.describeSymptoms}
                 </label>
                 <textarea
@@ -187,13 +179,13 @@ export default function CropDoctorPage() {
                   value={symptomsDescription}
                   onChange={(e) => setSymptomsDescription(e.target.value)}
                   placeholder="उदा. पत्तियां पीली पड़ रही हैं या तना कटकर सूख रहा है..."
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-charcoal-300 bg-white text-sm text-charcoal-900 focus:outline-none focus:ring-2 focus:ring-forest-600 focus:border-forest-600"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCE9DD] bg-white text-sm text-[#10312B] focus:outline-none focus:ring-2 focus:ring-[#1F4A3F]/20 focus:border-[#1F4A3F]"
                 />
               </div>
 
               {/* Sample Symptom Quick Buttons */}
               <div className="space-y-1.5">
-                <span className="text-[11px] font-semibold text-charcoal-500 block">
+                <span className="text-[11px] font-semibold text-[#52685B] block">
                   सामान्य लक्षण तुरंत चुनें:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -204,7 +196,7 @@ export default function CropDoctorPage() {
                         'पत्तियों पर पीले मोजेक जैसे चकत्ते और सफेद मक्खी का प्रकोप है।'
                       )
                     }
-                    className="px-2 py-1 text-[11px] rounded bg-cream-200 hover:bg-cream-300 text-charcoal-800"
+                    className="px-2.5 py-1 text-[11px] rounded-lg bg-[#EAF4E8] hover:bg-[#DBF2DE] text-[#10312B] border border-[#DCE9DD] transition-colors"
                   >
                     पीला मोजेक
                   </button>
@@ -215,7 +207,7 @@ export default function CropDoctorPage() {
                         'तने पर गोल छल्ले कट गए हैं और शाखा ऊपर से सूख रही है।'
                       )
                     }
-                    className="px-2 py-1 text-[11px] rounded bg-cream-200 hover:bg-cream-300 text-charcoal-800"
+                    className="px-2.5 py-1 text-[11px] rounded-lg bg-[#EAF4E8] hover:bg-[#DBF2DE] text-[#10312B] border border-[#DCE9DD] transition-colors"
                   >
                     रिंग कटर / गर्डल बीटल
                   </button>
@@ -226,7 +218,7 @@ export default function CropDoctorPage() {
                         'चने का हरा पौधा अचानक सूख गया है और जड़ चीरने पर काली दिखती है।'
                       )
                     }
-                    className="px-2 py-1 text-[11px] rounded bg-cream-200 hover:bg-cream-300 text-charcoal-800"
+                    className="px-2.5 py-1 text-[11px] rounded-lg bg-[#EAF4E8] hover:bg-[#DBF2DE] text-[#10312B] border border-[#DCE9DD] transition-colors"
                   >
                     चने का उकठा (Wilt)
                   </button>
@@ -234,7 +226,7 @@ export default function CropDoctorPage() {
               </div>
 
               <Button
-                variant="agri"
+                variant="primary"
                 size="lg"
                 className="w-full mt-2"
                 onClick={handleAnalyze}
@@ -249,13 +241,15 @@ export default function CropDoctorPage() {
         {/* Diagnostic Results View (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
           {!diagnosis ? (
-            <Card className="border-dashed border-2 border-charcoal-200">
-              <CardContent className="p-12 text-center space-y-3 text-charcoal-500">
-                <Leaf className="w-12 h-12 text-charcoal-300 mx-auto" />
-                <h3 className="font-bold text-base text-charcoal-700">
+            <Card className="border-dashed border-2 border-[#DCE9DD]">
+              <CardContent className="p-12 text-center space-y-3 text-[#718579]">
+                <div className="w-12 h-12 rounded-2xl bg-[#EAF4E8] text-[#1F4A3F] flex items-center justify-center mx-auto">
+                  <Leaf className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-base text-[#10312B]">
                   लक्षणों का विवरण भरकर विश्लेषण शुरू करें
                 </h3>
-                <p className="text-xs max-w-sm mx-auto leading-relaxed">
+                <p className="text-xs max-w-sm mx-auto leading-relaxed text-[#52685B]">
                   क्रॉप डॉक्टर लक्षण और वातावरण का मिलान करके जैविक देसी उपाय व अनुमोदित
                   कीटनाशक सुरक्षा की निष्पक्ष जानकारी प्रदान करता है।
                 </p>
@@ -264,49 +258,44 @@ export default function CropDoctorPage() {
           ) : (
             <div className="space-y-5 animate-fadeIn">
               {/* Result Summary Card */}
-              <Card className="border-agri-300 bg-gradient-to-br from-white to-agri-50/20 shadow-md">
-                <CardHeader>
+              <Card className="border-[#DCE9DD] shadow-card">
+                <CardHeader className="bg-gradient-to-r from-[#10312B] to-[#1F4A3F] text-white">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       <Badge
-                        variant={
-                          diagnosis.confidenceTier === 'High'
-                            ? 'agri'
-                            : diagnosis.confidenceTier === 'Moderate'
-                            ? 'forest'
-                            : 'warning'
-                        }
+                        variant="mint"
                         size="sm"
+                        className="bg-[#DBF2DE] text-[#092622]"
                       >
                         विश्वास स्तर: {diagnosis.confidenceTier}
                       </Badge>
                       {diagnosis.scientificName && (
-                        <span className="text-[11px] font-mono italic text-charcoal-500">
+                        <span className="text-[11px] font-mono italic text-[#DBF2DE]/80">
                           {diagnosis.scientificName}
                         </span>
                       )}
                     </div>
-                    <CardTitle className="text-xl text-forest-950">
+                    <CardTitle className="text-xl text-white">
                       {diagnosis.conditionNameHi}
                     </CardTitle>
-                    <CardDescription className="text-charcoal-600">
+                    <CardDescription className="text-[#DBF2DE]/80">
                       {diagnosis.conditionNameEn}
                     </CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="p-6 space-y-4">
                   {/* Observed Symptoms */}
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal-700 mb-1.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#52685B] mb-2">
                       पहचाने गए मुख्य लक्षण:
                     </h4>
-                    <ul className="space-y-1">
+                    <ul className="space-y-1.5">
                       {diagnosis.symptomsObserved.map((sym, idx) => (
                         <li
                           key={idx}
-                          className="text-xs text-charcoal-800 flex items-start gap-2"
+                          className="text-xs text-[#10312B] flex items-start gap-2"
                         >
-                          <span className="text-agri-600 font-bold">•</span>
+                          <span className="text-[#1F4A3F] font-bold">•</span>
                           <span>{sym}</span>
                         </li>
                       ))}
@@ -314,23 +303,23 @@ export default function CropDoctorPage() {
                   </div>
 
                   {/* Weather correlation */}
-                  <div className="p-3 bg-cream-100 rounded-lg text-xs text-charcoal-700 border border-charcoal-200">
-                    <span className="font-bold text-charcoal-900">
+                  <div className="p-3.5 bg-[#EAF4E8] rounded-xl text-xs text-[#10312B] border border-[#DCE9DD]">
+                    <span className="font-bold text-[#10312B]">
                       मौसम व वातावरण प्रभाव:{' '}
                     </span>
-                    <span>{diagnosis.favorableWeatherConditions}</span>
+                    <span className="text-[#52685B]">{diagnosis.favorableWeatherConditions}</span>
                   </div>
 
                   {/* Organic & Biological Remedies */}
-                  <div className="p-4 rounded-xl bg-agri-50 border border-agri-200 space-y-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-agri-900 flex items-center gap-1.5">
-                      <Leaf className="w-4 h-4 text-agri-700" />
+                  <div className="p-4 rounded-xl bg-[#DBF2DE]/50 border border-[#9EC2A9]/60 space-y-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#092622] flex items-center gap-1.5">
+                      <Leaf className="w-4 h-4 text-[#1F4A3F]" />
                       <span>{t.cropDoctor.organicMeasures}</span>
                     </h4>
-                    <ul className="space-y-1.5 text-xs text-agri-950">
+                    <ul className="space-y-1.5 text-xs text-[#10312B]">
                       {diagnosis.organicManagementHi.map((step, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-agri-600 shrink-0 mt-0.5" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#1F4A3F] shrink-0 mt-0.5" />
                           <span>{step}</span>
                         </li>
                       ))}
@@ -338,15 +327,15 @@ export default function CropDoctorPage() {
                   </div>
 
                   {/* Approved Chemical Measures */}
-                  <div className="p-4 rounded-xl bg-cream-100 border border-charcoal-200 space-y-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal-900 flex items-center gap-1.5">
-                      <Bug className="w-4 h-4 text-forest-800" />
+                  <div className="p-4 rounded-xl bg-[#F3F8F2] border border-[#DCE9DD] space-y-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#10312B] flex items-center gap-1.5">
+                      <Bug className="w-4 h-4 text-[#1F4A3F]" />
                       <span>{t.cropDoctor.chemicalMeasures} (केवल आवश्यकता होने पर)</span>
                     </h4>
-                    <ul className="space-y-1.5 text-xs text-charcoal-800">
+                    <ul className="space-y-1.5 text-xs text-[#52685B]">
                       {diagnosis.chemicalManagementHi.map((step, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <span className="text-forest-700 font-bold">•</span>
+                          <span className="text-[#1F4A3F] font-bold">•</span>
                           <span>{step}</span>
                         </li>
                       ))}
@@ -355,13 +344,13 @@ export default function CropDoctorPage() {
 
                   {/* Precautions */}
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal-700 mb-1.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#52685B] mb-1.5">
                       {t.cropDoctor.precautions}
                     </h4>
-                    <ul className="space-y-1 text-xs text-charcoal-700">
+                    <ul className="space-y-1 text-xs text-[#52685B]">
                       {diagnosis.precautionsHi.map((p, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <span className="text-charcoal-400 font-bold">•</span>
+                          <span className="text-[#718579] font-bold">•</span>
                           <span>{p}</span>
                         </li>
                       ))}
@@ -369,13 +358,13 @@ export default function CropDoctorPage() {
                   </div>
 
                   {/* Disclaimer & KVK visit callout */}
-                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-300 text-xs text-amber-900 space-y-1">
+                  <div className="p-3.5 bg-[#FEF3C7] rounded-xl border border-[#FDE68A] text-xs text-[#92400E] space-y-1">
                     <div className="flex items-center gap-1.5 font-bold">
-                      <AlertTriangle className="w-4 h-4 text-amber-700" />
+                      <AlertTriangle className="w-4 h-4 text-[#B45309]" />
                       <span>{t.cropDoctor.disclaimerNote}</span>
                     </div>
                     {diagnosis.requiresExpertVisit && (
-                      <p className="font-semibold text-rose-800 pt-1">
+                      <p className="font-semibold text-[#B91C1C] pt-1">
                         गंभीर रोग चेतावनी: इस रोग के फैलाव को रोकने हेतु कृषि वैज्ञानिक अथवा
                         ब्लॉक कृषि अधिकारी से खेत का मुआयना अवश्य करवाएं।
                       </p>
@@ -383,7 +372,7 @@ export default function CropDoctorPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <span className="text-[11px] text-charcoal-500 font-mono">
+                  <span className="text-[11px] text-[#718579] font-mono">
                     इंजन: {providerName || 'ICAR Plant Protection Knowledge Base'}
                   </span>
                 </CardFooter>

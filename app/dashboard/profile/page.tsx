@@ -2,19 +2,16 @@
 
 import React, { useState } from 'react';
 import { useI18n } from '@/lib/i18n/context';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import {
   User,
-  MapPin,
-  Sprout,
-  ShieldCheck,
   Download,
   Database,
-  Languages,
   CheckCircle2,
 } from 'lucide-react';
 import { INITIAL_DEMO_FARMER, INITIAL_DEMO_FARM } from '@/lib/demo/demo-state';
@@ -27,7 +24,6 @@ export default function ProfilePage() {
 
   const [profile, setProfile] = useState(INITIAL_DEMO_FARMER);
   const [farm, setFarm] = useState(INITIAL_DEMO_FARM);
-  const [selectedUnit, setSelectedUnit] = useState<AreaUnit>('acre');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   const handleSave = (e: React.FormEvent) => {
@@ -58,18 +54,11 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-forest-950 flex items-center gap-2">
-            <User className="w-6 h-6 text-forest-700" />
-            <span>{t.nav.profile}</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-charcoal-600 mt-0.5">
-            किसान विवरण, भूमि रकबा इकाइयां, पसंदीदा भाषा एवं डेटा बैकअप
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title={t.nav.profile}
+        subtitle="किसान विवरण, भूमि रकबा इकाइयां, पसंदीदा भाषा एवं डेटा बैकअप"
+        icon={<User className="w-5 h-5 text-[#1F4A3F]" />}
+        actions={
           <Button
             variant="outline"
             size="sm"
@@ -77,17 +66,17 @@ export default function ProfilePage() {
             className="gap-1.5"
           >
             <Download className="w-4 h-4" />
-            <span>डेटा बैकअप डाउनलोड करें</span>
+            <span>डेटा बैकअप डाउनलोड</span>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Profile Edit Form (8 Cols) */}
         <div className="lg:col-span-8 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">किसान व्यक्तिगत व संपर्क विवरण</CardTitle>
+              <CardTitle className="text-base text-[#10312B]">किसान व्यक्तिगत व संपर्क विवरण</CardTitle>
               <CardDescription>
                 यह जानकारी आपकी स्थानीय मौसम और मंडी सलाह को अनुकूलित करती है
               </CardDescription>
@@ -95,8 +84,8 @@ export default function ProfilePage() {
             <CardContent>
               <form onSubmit={handleSave} className="space-y-4">
                 {savedSuccess && (
-                  <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-300 text-xs text-emerald-900 flex items-center gap-2 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <div className="p-3.5 rounded-xl bg-[#E8F5E9] border border-[#A5D6A7] text-xs text-[#1B5E20] flex items-center gap-2 font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-[#2E7D32]" />
                     <span>प्रोफ़ाइल विवरण सफलतापूर्वक सुरक्षित कर लिया गया है।</span>
                   </div>
                 )}
@@ -115,7 +104,7 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-charcoal-100">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-[#DCE9DD]">
                   <Input
                     label="राज्य (State)"
                     value={profile.state}
@@ -167,21 +156,21 @@ export default function ProfilePage() {
                   </Select>
                 </div>
 
-                <div className="pt-2 border-t border-charcoal-100 space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal-700">
+                <div className="pt-2 border-t border-[#DCE9DD] space-y-4">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#52685B]">
                     खेत व भूमि रकबा विवरण
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <Input
-                      label="खेत का कुल रकबा (Total Area in Acres)"
+                      label="खेत का कुल रकबा (एकड़)"
                       type="number"
                       step="0.5"
                       value={farm.totalArea}
                       onChange={(e) =>
                         setFarm({ ...farm, totalArea: parseFloat(e.target.value) || 1 })
                       }
-                      helperText="मध्य प्रदेश मानक: 1 एकड़ ≈ 1.6 बीघा"
+                      helperText="म.प्र. मानक: 1 एकड़ ≈ 1.6 बीघा"
                     />
 
                     <Select
@@ -222,7 +211,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="flex justify-end pt-3">
-                  <Button type="submit" variant="agri" size="md">
+                  <Button type="submit" variant="primary" size="md">
                     विवरण सुरक्षित करें
                   </Button>
                 </div>
@@ -236,31 +225,31 @@ export default function ProfilePage() {
           {/* Supabase Status Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Database className="w-4 h-4 text-forest-700" />
+              <CardTitle className="text-base text-[#10312B] flex items-center gap-2">
+                <Database className="w-4 h-4 text-[#1F4A3F]" />
                 <span>डेटाबेस व खाता स्थिति</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-xs">
+            <CardContent className="space-y-3.5 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-charcoal-600">खाता प्रकार:</span>
+                <span className="text-[#52685B]">खाता प्रकार:</span>
                 <Badge variant="demo" size="sm">
                   स्थानीय डेमो मोड
                 </Badge>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-charcoal-600">Supabase क्लाउड कनेक्शन:</span>
+                <span className="text-[#52685B]">Supabase क्लाउड कनेक्शन:</span>
                 <span
                   className={`font-semibold ${
-                    isSupabaseConfigured ? 'text-agri-600' : 'text-amber-700'
+                    isSupabaseConfigured ? 'text-[#236B38]' : 'text-[#B45309]'
                   }`}
                 >
                   {isSupabaseConfigured ? 'कनेक्टेड (Live)' : 'लोकल स्टोरेज (ऑफ़लाइन)'}
                 </span>
               </div>
 
-              <div className="p-3 bg-cream-100 rounded-lg text-charcoal-600 border border-charcoal-200 leading-relaxed text-[11px]">
+              <div className="p-3.5 bg-[#EAF4E8] rounded-xl text-[#52685B] border border-[#DCE9DD] leading-relaxed text-[11px]">
                 क्लाउड सिंक के बिना भी आपके सभी खेत कार्य, मिट्टी परीक्षण और गणनाएं इस डिवाइस
                 पर स्थानीय रूप से सुरक्षित रहती हैं।
               </div>
@@ -270,16 +259,16 @@ export default function ProfilePage() {
           {/* Unit Conversion Quick Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">मध्य प्रदेश भूमि रकबा रूपांतरण</CardTitle>
+              <CardTitle className="text-base text-[#10312B]">मध्य प्रदेश भूमि रकबा रूपांतरण</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2.5 text-xs">
-              <div className="p-3 bg-forest-50 border border-forest-200/80 rounded-lg space-y-1.5">
-                <span className="font-bold text-forest-950 block">
+            <CardContent className="space-y-3 text-xs">
+              <div className="p-4 bg-[#EAF4E8] border border-[#DCE9DD] rounded-xl space-y-2">
+                <span className="font-bold text-[#10312B] block">
                   आपके खेत का कुल रकबा ({farm.totalArea} एकड़):
                 </span>
-                <div className="grid grid-cols-2 gap-2 text-forest-900 font-mono pt-1">
+                <div className="grid grid-cols-2 gap-2 text-[#10312B] font-mono pt-1">
                   <div>
-                    • <strong>{convertedBigha}</strong> बीघा (पक्का बीघा)
+                    • <strong>{convertedBigha}</strong> बीघा (पक्का)
                   </div>
                   <div>
                     • <strong>{convertedHectare}</strong> हेक्टेयर
@@ -287,7 +276,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="text-[11px] text-charcoal-500 pt-1 space-y-1">
+              <div className="text-[11px] text-[#718579] pt-1 space-y-1">
                 <p>• 1 एकड़ = 1.6 बीघा (मध्य म.प्र. मानक)</p>
                 <p>• 1 हेक्टेयर = 2.471 एकड़</p>
                 <p>• 1 क्विंटल = 100 किलोग्राम</p>

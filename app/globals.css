@@ -3,46 +3,80 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8f9f5;
-  --foreground: #1c1e1b;
-  --primary-forest: #14452f;
-  --primary-agri: #2e7d32;
-  --accent-earth: #b76e39;
+  /* Reference Palette */
+  --color-midnight: #092622;
+  --color-deep-forest: #10312B;
+  --color-forest-green: #1F4A3F;
+  --color-muted-sage: #4E7967;
+  --color-soft-sage: #9EC2A9;
+  --color-pale-mint: #DBF2DE;
+
+  /* Functional Semantic Tokens */
+  --app-bg: #F3F8F2;
+  --app-surface: #FFFFFF;
+  --app-surface-subtle: #EAF4E8;
+  --app-border: #DCE9DD;
+  --app-border-hover: #C4DAC7;
+
+  --ink-primary: #10312B;
+  --ink-secondary: #52685B;
+  --ink-muted: #718579;
+
+  --btn-primary: #1F4A3F;
+  --btn-primary-text: #FFFFFF;
+  --accent-soft: #DBF2DE;
+
+  --status-success: #236B38;
+  --status-warning: #B45309;
+  --status-error: #B91C1C;
+  --status-info: #1E6B65;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: var(--app-bg);
+  color: var(--ink-primary);
+  font-family: var(--font-dm-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbars for data tables and chat */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-manrope), var(--font-dm-sans), system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background-color: #dbf2de;
+  color: #10312b;
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f3f8f2;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #b5d6be;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #4e7967;
 }
 
+/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 @keyframes scaleUp {
-  from { transform: scale(0.96); opacity: 0; }
+  from { transform: scale(0.97); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
@@ -52,13 +86,13 @@ body {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.15s ease-out forwards;
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-scaleUp {
-  animation: scaleUp 0.15s ease-out forwards;
+  animation: scaleUp 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-slideRight {
-  animation: slideRight 0.2s ease-out forwards;
+  animation: slideRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
