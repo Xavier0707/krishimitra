@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { calculateNetReturn, convertToQuintals } from '../lib/mandi/profit-calculator';
+import {
+  calculateNetReturn,
+  convertToQuintals,
+  calculateFarmProfitScenario,
+} from '../lib/mandi/profit-calculator';
 import { NetReturnInput } from '../lib/types';
 
 describe('Mandi Profit Calculator', () => {
@@ -86,5 +90,77 @@ describe('Mandi Profit Calculator', () => {
     });
     expect(result.netProceeds).toBe(0);
     expect(result.effectivePricePerQuintal).toBe(0);
+  });
+});
+
+describe('Zero-Cost Verified Farm Profit & Break-Even Calculator', () => {
+  it('strictly validates the 5 canonical agricultural equations', () => {
+    // 8 Acres of Soybean in Sehore, yielding 7.5 Quintals/Acre
+    const scenario = calculateFarmProfitScenario({
+      cropName: 'Soybean',
+      farmAreaAcres: 8,
+      expectedYieldQPerAcre: 7.5,
+      salePricePerQuintal: 4800,
+      cultivationCosts: 80000, // Seed, DAP, urea, tractor labor
+      transportCosts: 4500,    // Mandi freight
+      handlingCosts: 1800,     // Weighing & labor
+      storageCosts: 0,
+      otherExpenses: 1200,
+    });
+
+    expect(scenario.isValid).toBe(true);
+
+    // 1. Harvest quantity = 8 * 7.5 = 60 quintals
+    expect(scenario.harvestQuantityQuintals).toBe(60);
+
+    // 2. Gross revenue = 60 quintals * ₹4,800 = ₹288,000
+    expect(scenario.grossRevenue).toBe(288000);
+
+    // 3. Total costs = 80000 + 4500 + 1800 + 0 + 1200 = ₹87,500
+    expect(scenario.totalCosts).toBe(87500);
+
+    // 4. Estimated net return = 288000 - 87500 = ₹200,500
+    expect(scenario.estimatedNetReturn).toBe(200500);
+
+    // 5. Break-even price per quintal = 87500 / 60 = ₹1,458.33 / quintal
+    expect(scenario.breakEvenPricePerQuintal).toBe(1458.33);
+  });
+
+  it('rejects negative numbers and returns helpful error message', () => {
+    const invalidResult = calculateFarmProfitScenario({
+      farmAreaAcres: -5,
+      expectedYieldQPerAcre: 10,
+      salePricePerQuintal: 4000,
+    });
+
+    expect(invalidResult.isValid).toBe(false);
+    expect(invalidResult.validationError).toContain('cannot be negative');
+    expect(invalidResult.estimatedNetReturn).toBe(0);
+  });
+
+  it('rejects zero acreage gracefully', () => {
+    const zeroAreaResult = calculateFarmProfitScenario({
+      farmAreaAcres: 0,
+      expectedYieldQPerAcre: 8,
+      salePricePerQuintal: 4500,
+    });
+
+    expect(zeroAreaResult.isValid).toBe(false);
+    expect(zeroAreaResult.validationError).toContain('greater than zero');
+  });
+
+  it('prevents division by zero when expected yield is zero', () => {
+    const zeroYieldResult = calculateFarmProfitScenario({
+      farmAreaAcres: 10,
+      expectedYieldQPerAcre: 0,
+      salePricePerQuintal: 4500,
+      cultivationCosts: 20000,
+    });
+
+    expect(zeroYieldResult.isValid).toBe(true);
+    expect(zeroYieldResult.harvestQuantityQuintals).toBe(0);
+    expect(zeroYieldResult.grossRevenue).toBe(0);
+    expect(zeroYieldResult.breakEvenPricePerQuintal).toBe(0); // Safely returns 0, no NaN or Infinity
+    expect(zeroYieldResult.estimatedNetReturn).toBe(-20000); // Loss of cultivation cost
   });
 });

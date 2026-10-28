@@ -19,6 +19,8 @@ import {
   CloudRain,
   CloudLightning,
   CloudFog,
+  MapPin,
+  Compass,
 } from 'lucide-react';
 import { WeatherData, WeatherDayForecast } from '@/lib/types';
 import { MP_DISTRICT_COORDINATES } from '@/lib/weather/open-meteo';
@@ -28,27 +30,81 @@ export default function WeatherPage() {
   const [district, setDistrict] = useState<string>('Sehore');
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [locatingGps, setLocatingGps] = useState<boolean>(false);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const [gpsLabel, setGpsLabel] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<number>(0);
 
-  const loadWeather = async (dist: string) => {
+  const loadWeather = async (dist: string, customLat?: number, customLon?: number, label?: string) => {
     setLoading(true);
+    setFetchError(null);
     try {
-      const res = await fetch(`/api/weather?district=${encodeURIComponent(dist)}&crops=Soybean,Wheat,Gram`);
+      let url = `/api/weather?crops=Soybean,Wheat,Gram`;
+      if (customLat !== undefined && customLon !== undefined) {
+        url += `&lat=${customLat}&lon=${customLon}&label=${encodeURIComponent(label || 'GPS Farm')}`;
+      } else {
+        url += `&district=${encodeURIComponent(dist)}`;
+      }
+
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setWeather(data);
         setSelectedDay(0);
+      } else {
+        setFetchError('मौसम आंकड़े प्राप्त करने में असमर्थ। कृपया पुनः प्रयास करें।');
       }
     } catch {
-      // ignore
+      setFetchError('नेटवर्क त्रुटि या सर्वर अनुपलब्ध। कृपया इंटरनेट कनेक्शन जांचें।');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadWeather(district);
+    if (!gpsLabel) {
+      loadWeather(district);
+    }
   }, [district]);
+
+  // Farmer-consented device geolocation lookup
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setGpsError('आपके ब्राउज़र में जीपीएस लोकेशन सुविधा उपलब्ध नहीं है।');
+      return;
+    }
+
+    setLocatingGps(true);
+    setGpsError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const label = `GPS (${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E)`;
+        setGpsLabel(label);
+        loadWeather('GPS', lat, lon, label);
+        setLocatingGps(false);
+      },
+      (err) => {
+        setLocatingGps(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setGpsError('लोकेशन अनुमति अस्वीकृत की गई। कृपया सूची से अपना जिला चुनें।');
+        } else {
+          setGpsError('जीपीएस सिग्नल प्राप्त नहीं हो सका। कृपया सूची से अपना जिला चुनें।');
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: false }
+    );
+  };
+
+  const handleResetToDistrict = (d: string) => {
+    setGpsLabel(null);
+    setGpsError(null);
+    setDistrict(d);
+    loadWeather(d);
+  };
 
   const activeDay: WeatherDayForecast | undefined = weather?.daily[selectedDay];
 
@@ -93,18 +149,32 @@ export default function WeatherPage() {
       {/* District Selector & Coordinates */}
       <Card>
         <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="w-full sm:w-72">
-            <Select
-              label="खेत का जिला चुनें"
-              value={district}
-              onChange={(e) => setDistrict(e.target.value)}
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 w-full sm:w-auto">
+            <div className="w-full sm:w-72">
+              <Select
+                label="खेत का जिला चुनें"
+                value={gpsLabel ? 'GPS' : district}
+                onChange={(e) => handleResetToDistrict(e.target.value)}
+              >
+                {gpsLabel && <option value="GPS">{gpsLabel}</option>}
+                {Object.keys(MP_DISTRICT_COORDINATES).map((d) => (
+                  <option key={d} value={d}>
+                    {d} (मध्य प्रदेश)
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={handleUseCurrentLocation}
+              disabled={locatingGps}
+              className="gap-2 shrink-0 border border-[#DCE9DD]"
             >
-              {Object.keys(MP_DISTRICT_COORDINATES).map((d) => (
-                <option key={d} value={d}>
-                  {d} (मध्य प्रदेश)
-                </option>
-              ))}
-            </Select>
+              <Compass className={`w-4 h-4 text-[#1F4A3F] ${locatingGps ? 'animate-spin' : ''}`} />
+              <span>{locatingGps ? 'खोज रहे हैं...' : 'वर्तमान जीपीएस स्थान लें'}</span>
+            </Button>
           </div>
 
           <div className="text-xs text-[#52685B] space-y-1">
@@ -117,12 +187,43 @@ export default function WeatherPage() {
             <p>
               अंतिम अद्यतन:{' '}
               <span className="font-medium text-[#10312B]">
-                {weather ? new Date(weather.retrievedAt).toLocaleTimeString('hi-IN') : '...'}
+                {weather
+                  ? `${new Date(weather.retrievedAt).toLocaleTimeString('hi-IN')} (${
+                      weather.isLive ? 'Open-Meteo लाइव' : 'ऑफ़लाइन कैश'
+                    })`
+                  : '...'}
               </span>
             </p>
           </div>
         </CardContent>
       </Card>
+
+      {/* GPS Error Feedback if any */}
+      {gpsError && (
+        <div className="p-3 bg-[#FEF3C7] rounded-xl text-xs text-[#92400E] border border-[#FDE68A] flex items-center justify-between">
+          <span>{gpsError}</span>
+          <button
+            onClick={() => setGpsError(null)}
+            className="text-xs font-bold underline ml-3"
+          >
+            खारिज करें
+          </button>
+        </div>
+      )}
+
+      {/* Fetch Error & Retry */}
+      {fetchError && (
+        <div className="p-4 bg-[#FEE2E2] rounded-2xl text-xs text-[#991B1B] border border-[#FECACA] flex items-center justify-between">
+          <span>{fetchError}</span>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => (gpsLabel ? handleUseCurrentLocation() : loadWeather(district))}
+          >
+            पुनः प्रयास करें
+          </Button>
+        </div>
+      )}
 
       {/* Agricultural Risk Advisories */}
       {weather && weather.cropRisks.length > 0 && (

@@ -50,7 +50,23 @@ export default function KrishiCopilotPage() {
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [providerInfo, setProviderInfo] = useState<{
+    provider: string;
+    isLiveLLMConfigured: boolean;
+  }>({
+    provider: 'KrishiConnect Agricultural Agronomy Engine (Local Domain)',
+    isLiveLLMConfigured: false,
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('/api/copilot')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) setProviderInfo(data);
+      })
+      .catch(() => {});
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -180,8 +196,10 @@ export default function KrishiCopilotPage() {
         subtitle={t.copilot.subtitle}
         icon={<Bot className="w-5 h-5 text-[#1F4A3F]" />}
         badge={
-          <Badge variant="mint">
-            सत्यापित ICAR स्रोत आधारित
+          <Badge variant={providerInfo.isLiveLLMConfigured ? 'mint' : 'forest'}>
+            {providerInfo.isLiveLLMConfigured
+              ? 'Google Gemini 1.5 Flash (Free Tier)'
+              : 'स्थानीय कृषि ज्ञानकोश (ICAR RAG)'}
           </Badge>
         }
         actions={
@@ -200,6 +218,21 @@ export default function KrishiCopilotPage() {
           </Button>
         }
       />
+
+      {/* Privacy & Agronomy Notice */}
+      <div className="p-3.5 rounded-xl bg-white border border-[#DCE9DD] text-xs text-[#52685B] flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-soft">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-[#1F4A3F] shrink-0" />
+          <span>
+            {providerInfo.isLiveLLMConfigured
+              ? 'सक्रिय एआई मॉडल: Google Gemini Flash (निःशुल्क कोटा)। किसान की व्यक्तिगत पहचान सुरक्षित रखी जाती है।'
+              : 'स्थानीय ज्ञान मोड सक्रिय: ICAR-IIWBR, कृषि विज्ञान केंद्र सीहोर एवं एगमार्कनेट के सत्यापित संदर्भों से उत्तर दिए जाते हैं।'}
+          </span>
+        </div>
+        <span className="text-[11px] text-[#718579] font-mono shrink-0">
+          सहमति आधारित संदर्भ RAG
+        </span>
+      </div>
 
       {/* Main Chat Window Card */}
       <Card className="h-[650px] flex flex-col border-[#DCE9DD] shadow-card">

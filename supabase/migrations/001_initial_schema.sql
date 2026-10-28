@@ -173,7 +173,43 @@ CREATE TABLE IF NOT EXISTS public.storage_scenarios (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 11. Notifications (Weather risk alerts, price thresholds, crop stage reminders)
+-- 11. Saved Profit Scenarios (Farm Profit & Break-Even Calculator records)
+CREATE TABLE IF NOT EXISTS public.saved_profit_scenarios (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    farmer_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    farm_id UUID REFERENCES public.farms(id) ON DELETE SET NULL,
+    scenario_title TEXT NOT NULL,
+    crop_name TEXT NOT NULL,
+    farm_area_acres NUMERIC(10, 2) NOT NULL,
+    expected_yield_q_per_acre NUMERIC(10, 2) NOT NULL,
+    harvest_quantity_quintals NUMERIC(10, 2) NOT NULL,
+    sale_price_per_quintal NUMERIC(10, 2) NOT NULL,
+    gross_revenue NUMERIC(12, 2) NOT NULL,
+    cultivation_costs NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    transport_costs NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    handling_costs NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    storage_costs NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    other_expenses NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    total_costs NUMERIC(12, 2) NOT NULL,
+    estimated_net_return NUMERIC(12, 2) NOT NULL,
+    break_even_price_per_quintal NUMERIC(10, 2) NOT NULL,
+    is_demo BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 12. Decision Reports (Exported decision summaries & advisories)
+CREATE TABLE IF NOT EXISTS public.decision_reports (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    farmer_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    report_type TEXT NOT NULL, -- 'mandi_sale_plan', 'weather_risk_mitigation', 'crop_suitability', 'storage_roi'
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    data_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    is_demo BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 13. Notifications (Weather risk alerts, price thresholds, crop stage reminders)
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     farmer_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -186,7 +222,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 12. Synchronization Metadata (PWA / Offline support)
+-- 14. Synchronization Metadata (PWA / Offline support)
 CREATE TABLE IF NOT EXISTS public.synchronization_metadata (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     farmer_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -201,5 +237,7 @@ CREATE INDEX IF NOT EXISTS idx_farms_farmer_id ON public.farms(farmer_id);
 CREATE INDEX IF NOT EXISTS idx_farm_plots_farm_id ON public.farm_plots(farm_id);
 CREATE INDEX IF NOT EXISTS idx_farm_activities_plot_id ON public.farm_activities(plot_id);
 CREATE INDEX IF NOT EXISTS idx_soil_tests_farm_id ON public.soil_tests(farm_id);
+CREATE INDEX IF NOT EXISTS idx_saved_profit_scenarios_farmer_id ON public.saved_profit_scenarios(farmer_id);
+CREATE INDEX IF NOT EXISTS idx_decision_reports_farmer_id ON public.decision_reports(farmer_id);
 CREATE INDEX IF NOT EXISTS idx_mandi_prices_lookup ON public.mandi_prices(state, district, commodity, arrival_date);
 CREATE INDEX IF NOT EXISTS idx_notifications_farmer_id ON public.notifications(farmer_id, is_read);

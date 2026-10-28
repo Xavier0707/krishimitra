@@ -9,6 +9,8 @@ ALTER TABLE public.farm_activities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.soil_tests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.crop_assessments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.storage_scenarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.saved_profit_scenarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.decision_reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.synchronization_metadata ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.crops ENABLE ROW LEVEL SECURITY;
@@ -111,6 +113,26 @@ CREATE POLICY "Farmers can read own storage scenarios" ON public.storage_scenari
 
 CREATE POLICY "Farmers can insert own storage scenarios" ON public.storage_scenarios
     FOR INSERT WITH CHECK (auth.uid() = farmer_id);
+
+-- 7b. Saved Profit Scenarios
+CREATE POLICY "Farmers can read own profit scenarios" ON public.saved_profit_scenarios
+    FOR SELECT USING (auth.uid() = farmer_id);
+
+CREATE POLICY "Farmers can insert own profit scenarios" ON public.saved_profit_scenarios
+    FOR INSERT WITH CHECK (auth.uid() = farmer_id);
+
+CREATE POLICY "Farmers can delete own profit scenarios" ON public.saved_profit_scenarios
+    FOR DELETE USING (auth.uid() = farmer_id);
+
+-- 7c. Decision Reports
+CREATE POLICY "Farmers can read own decision reports" ON public.decision_reports
+    FOR SELECT USING (auth.uid() = farmer_id);
+
+CREATE POLICY "Farmers can insert own decision reports" ON public.decision_reports
+    FOR INSERT WITH CHECK (auth.uid() = farmer_id);
+
+CREATE POLICY "Farmers can delete own decision reports" ON public.decision_reports
+    FOR DELETE USING (auth.uid() = farmer_id);
 
 -- 8. Notifications
 CREATE POLICY "Farmers can read own notifications" ON public.notifications

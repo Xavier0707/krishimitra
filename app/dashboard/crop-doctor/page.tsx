@@ -130,9 +130,12 @@ export default function CropDoctorPage() {
 
               {/* Photo Upload Zone */}
               <div>
-                <label className="block text-xs font-semibold text-[#52685B] uppercase tracking-wider mb-1.5">
-                  पौधे की फोटो (वैकल्पिक परंतु अनुशंसित)
+                <label className="block text-xs font-semibold text-[#52685B] uppercase tracking-wider mb-1">
+                  पौधे की फोटो (संदर्भ व रिकॉर्ड हेतु)
                 </label>
+                <p className="text-[11px] text-[#718579] mb-1.5 leading-snug">
+                  तस्वीर आपके रिकॉर्ड हेतु सहेजी जाती है। वर्तमान शून्य-लागत मोड में प्रारंभिक मिलान किसान द्वारा चयनित लक्षणों और ICAR/KVK ज्ञानकोश पर आधारित है।
+                </p>
 
                 {selectedImage ? (
                   <div className="relative rounded-2xl border border-[#DCE9DD] overflow-hidden bg-[#F3F8F2]">
@@ -267,7 +270,7 @@ export default function CropDoctorPage() {
                         size="sm"
                         className="bg-[#DBF2DE] text-[#092622]"
                       >
-                        विश्वास स्तर: {diagnosis.confidenceTier}
+                        लक्षण मिलान स्तर: {diagnosis.confidenceTier}
                       </Badge>
                       {diagnosis.scientificName && (
                         <span className="text-[11px] font-mono italic text-[#DBF2DE]/80">

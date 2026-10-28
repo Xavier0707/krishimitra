@@ -39,15 +39,25 @@ export function decodeWmoCode(code: number): { textEn: string; textHi: string; i
  */
 export async function fetchDistrictWeather(
   districtName: string = 'Sehore',
-  activeCrops: string[] = ['Soybean', 'Wheat']
+  activeCrops: string[] = ['Soybean', 'Wheat'],
+  customCoords?: { latitude: number; longitude: number; label?: string }
 ): Promise<WeatherData> {
-  const coords = MP_DISTRICT_COORDINATES[districtName] || MP_DISTRICT_COORDINATES['Sehore'];
+  const coords: DistrictLocation = customCoords
+    ? {
+        district: customCoords.label || 'GPS Location',
+        state: 'Madhya Pradesh',
+        latitude: customCoords.latitude,
+        longitude: customCoords.longitude,
+      }
+    : MP_DISTRICT_COORDINATES[districtName] || MP_DISTRICT_COORDINATES['Sehore'];
+
   const baseUrl = process.env.OPEN_METEO_BASE_URL || 'https://api.open-meteo.com/v1';
 
   try {
     const url = `${baseUrl}/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=Asia%2FKolkata`;
 
     const res = await fetch(url, {
+      signal: AbortSignal.timeout(8000),
       next: { revalidate: 1800 }, // Cache for 30 minutes
     });
 
