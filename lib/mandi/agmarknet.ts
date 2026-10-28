@@ -233,8 +233,10 @@ export async function getMandiPrices(filters: MandiFilterParams = {}): Promise<M
         statutoryWarningEn,
       };
 
-      // Cache valid results for 15 minutes
-      responseCache.set(cacheKey, { data: apiResult, expiresAt: Date.now() + 15 * 60 * 1000 });
+      // Cache valid non-empty live results for 15 minutes; do not lock in empty results
+      if (normalizedRecords.length > 0) {
+        responseCache.set(cacheKey, { data: apiResult, expiresAt: Date.now() + 15 * 60 * 1000 });
+      }
       return apiResult;
     } catch (err: unknown) {
       const isTimeout =
