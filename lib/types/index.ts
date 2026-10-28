@@ -121,10 +121,12 @@ export interface MandiPriceRecord {
   marketName: string;
   commodity: string;
   variety: string;
+  grade?: string;
   arrivalDate: string;
-  minPrice: number; // ₹/Quintal
-  maxPrice: number; // ₹/Quintal
-  modalPrice: number; // ₹/Quintal
+  minPrice: number | null; // ₹/Quintal (null if not reported)
+  maxPrice: number | null; // ₹/Quintal
+  modalPrice: number | null; // ₹/Quintal
+  unit?: string; // '₹/Quintal'
   dataSource: string;
   isLive: boolean;
   retrievedAt: string;

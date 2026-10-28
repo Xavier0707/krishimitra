@@ -250,14 +250,14 @@ export default function DashboardPage() {
                           {rate.variety}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right text-[#52685B]">
-                        {formatCurrency(rate.minPrice)}
+                      <td className="py-3 px-4 text-right text-[#52685B] font-mono">
+                        {rate.minPrice !== null ? formatCurrency(rate.minPrice) : '—'}
                       </td>
-                      <td className="py-3 px-4 text-right font-black text-[#10312B] text-base">
-                        {formatCurrency(rate.modalPrice)}
+                      <td className="py-3 px-4 text-right font-black text-[#10312B] text-base font-mono">
+                        {rate.modalPrice !== null ? formatCurrency(rate.modalPrice) : '—'}
                       </td>
-                      <td className="py-3 px-4 text-right text-[#52685B]">
-                        {formatCurrency(rate.maxPrice)}
+                      <td className="py-3 px-4 text-right text-[#52685B] font-mono">
+                        {rate.maxPrice !== null ? formatCurrency(rate.maxPrice) : '—'}
                       </td>
                     </tr>
                   ))}

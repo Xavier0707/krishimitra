@@ -10,8 +10,8 @@ interface I18nContextType {
   language: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => void;
   t: TranslationType;
-  formatCurrency: (amount: number) => string;
-  formatNumber: (amount: number) => string;
+  formatCurrency: (amount: number | null | undefined) => string;
+  formatNumber: (amount: number | null | undefined) => string;
 }
 
 const I18nContext = createContext<I18nContextType | null>(null);
@@ -43,14 +43,16 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const t = translations[language];
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount === null || amount === undefined || isNaN(amount)) return '—';
     const formatted = new Intl.NumberFormat('en-IN', {
       maximumFractionDigits: 0,
     }).format(amount);
     return `₹${formatted}`;
   };
 
-  const formatNumber = (amount: number) => {
+  const formatNumber = (amount: number | null | undefined) => {
+    if (amount === null || amount === undefined || isNaN(amount)) return '—';
     return new Intl.NumberFormat('en-IN', {
       maximumFractionDigits: 2,
     }).format(amount);

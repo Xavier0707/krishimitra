@@ -20,28 +20,72 @@ import {
   AlertCircle,
   CheckCircle2,
   HelpCircle,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import {
   calculateNetReturn,
   calculateFarmProfitScenario,
   FarmProfitScenarioResult,
 } from '@/lib/mandi/profit-calculator';
-import { MP_COMMODITIES } from '@/lib/mandi/mp-mandis-data';
+import { MP_COMMODITIES, MP_MANDIS } from '@/lib/mandi/mp-mandis-data';
 import { MandiPriceRecord, NetReturnBreakdown } from '@/lib/types';
 import { offlineStorage, SavedProfitScenarioLocal } from '@/lib/offline/indexed-db';
+
+const INDIAN_STATES = [
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Rajasthan',
+  'Uttar Pradesh',
+  'Gujarat',
+  'Punjab',
+  'Haryana',
+  'Karnataka',
+  'Telangana',
+  'Andhra Pradesh',
+  'All',
+];
+
+const EXTENDED_COMMODITIES = [
+  'Soybean',
+  'Soyabean',
+  'Wheat',
+  'Gram (Chana)',
+  'Garlic',
+  'Mustard',
+  'Maize',
+  'Cotton',
+  'Onion',
+  'All',
+];
 
 export default function MandiRadarPage() {
   const { t, formatCurrency } = useI18n();
 
   // Filter states
+  const [selectedState, setSelectedState] = useState<string>('Madhya Pradesh');
   const [selectedCommodity, setSelectedCommodity] = useState<string>('Soybean');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('Sehore');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [pageOffset, setPageOffset] = useState<number>(0);
+  const pageSize = 15;
+
+  // Data & API states
   const [mandiPrices, setMandiPrices] = useState<MandiPriceRecord[]>([]);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [hasMore, setHasMore] = useState<boolean>(false);
   const [loadingPrices, setLoadingPrices] = useState<boolean>(true);
   const [isLiveFeed, setIsLiveFeed] = useState<boolean>(false);
   const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean>(false);
+  const [apiStatus, setApiStatus] = useState<string>('live_synced');
   const [statusMessageHi, setStatusMessageHi] = useState<string>('');
+  const [statusMessageEn, setStatusMessageEn] = useState<string>('');
   const [dataSource, setDataSource] = useState<string>('');
+  const [retrievedAt, setRetrievedAt] = useState<string>('');
+  const [officialUrl, setOfficialUrl] = useState<string>('https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070');
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Active calculator mode
   const [calculatorMode, setCalculatorMode] = useState<'mandi_net' | 'farm_profit'>('mandi_net');
@@ -71,41 +115,81 @@ export default function MandiRadarPage() {
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
   const [savedScenariosList, setSavedScenariosList] = useState<SavedProfitScenarioLocal[]>([]);
 
-  // Fetch prices on filter change
-  useEffect(() => {
-    async function loadPrices() {
-      setLoadingPrices(true);
-      try {
-        const res = await fetch(
-          `/api/mandi?district=${encodeURIComponent(selectedDistrict)}&commodity=${encodeURIComponent(
-            selectedCommodity
-          )}`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setMandiPrices(data.records || []);
-          setIsLiveFeed(Boolean(data.isLive));
-          setApiKeyConfigured(Boolean(data.apiKeyConfigured));
-          setStatusMessageHi(data.statusMessageHi || '');
-          setDataSource(data.dataSource || '');
-          if (data.records && data.records.length > 0) {
-            setCalcPrice(data.records[0].modalPrice);
-            setScenarioSalePrice(data.records[0].modalPrice);
+  // Function to load prices from server-side /api/mandi
+  const loadPrices = async (resetOffset: boolean = false) => {
+    setLoadingPrices(true);
+    setFetchError(null);
+    const currentOffset = resetOffset ? 0 : pageOffset;
+    if (resetOffset) setPageOffset(0);
+
+    try {
+      let queryUrl = `/api/mandi?limit=${pageSize}&offset=${currentOffset}`;
+      if (selectedState && selectedState !== 'All') {
+        queryUrl += `&state=${encodeURIComponent(selectedState)}`;
+      }
+      if (selectedDistrict && selectedDistrict !== 'All') {
+        queryUrl += `&district=${encodeURIComponent(selectedDistrict)}`;
+      }
+      if (selectedCommodity && selectedCommodity !== 'All') {
+        queryUrl += `&commodity=${encodeURIComponent(selectedCommodity)}`;
+      }
+      if (searchQuery.trim()) {
+        queryUrl += `&search=${encodeURIComponent(searchQuery.trim())}`;
+      }
+
+      const res = await fetch(queryUrl);
+      const data = await res.json();
+
+      if (res.ok) {
+        setMandiPrices(data.records || []);
+        setTotalRecords(Number(data.total) || (data.records ? data.records.length : 0));
+        setHasMore(Boolean(data.hasMore));
+        setIsLiveFeed(Boolean(data.isLive));
+        setApiKeyConfigured(Boolean(data.apiKeyConfigured));
+        setApiStatus(data.status || 'live_synced');
+        setStatusMessageHi(data.statusMessageHi || '');
+        setStatusMessageEn(data.statusMessageEn || '');
+        setDataSource(data.dataSource || '');
+        setRetrievedAt(data.retrievedAt || new Date().toISOString());
+        if (data.officialDatasetUrl) setOfficialUrl(data.officialDatasetUrl);
+
+        if (data.records && data.records.length > 0) {
+          const firstValidModal = data.records.find((r: MandiPriceRecord) => r.modalPrice !== null);
+          if (firstValidModal && firstValidModal.modalPrice) {
+            setCalcPrice(firstValidModal.modalPrice);
+            setScenarioSalePrice(firstValidModal.modalPrice);
           }
         }
-      } catch {
-        // ignore
-      } finally {
-        setLoadingPrices(false);
+      } else {
+        setApiStatus(data.status || 'api_error');
+        setStatusMessageHi(data.statusMessageHi || 'मंडी डेटा प्राप्त करने में समस्या आई।');
+        setStatusMessageEn(data.statusMessageEn || data.error || 'Failed to retrieve records.');
+        setFetchError(data.statusMessageHi || data.error || 'सर्वर से संपर्क नहीं हो पाया।');
+        setMandiPrices([]);
       }
+    } catch {
+      setFetchError('नेटवर्क त्रुटि: सरकारी सर्वर से संपर्क नहीं हो सका। कृपया पुनः प्रयास करें।');
+      setMandiPrices([]);
+    } finally {
+      setLoadingPrices(false);
     }
-    loadPrices();
-  }, [selectedCommodity, selectedDistrict]);
+  };
+
+  // Trigger price load on filter or page change
+  useEffect(() => {
+    loadPrices(false);
+  }, [selectedState, selectedCommodity, selectedDistrict, pageOffset]);
 
   // Load saved scenarios on mount
   useEffect(() => {
     setSavedScenariosList(offlineStorage.getSavedScenarios());
   }, []);
+
+  // Safe price display helper
+  const renderPrice = (price: number | null | undefined): string => {
+    if (price === null || price === undefined) return '—';
+    return formatCurrency(price);
+  };
 
   // Recalculate net return whenever inputs change
   useEffect(() => {
@@ -212,7 +296,7 @@ export default function MandiRadarPage() {
         }
       />
 
-      {/* Transparent Service Status & API Setup Instructions Banner */}
+      {/* Transparent Service Status & API Feedback Banner */}
       {!apiKeyConfigured ? (
         <div className="p-4 sm:p-5 rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] text-[#92400E] shadow-soft space-y-2">
           <div className="flex items-center gap-2.5">
@@ -232,31 +316,73 @@ export default function MandiRadarPage() {
             <span>2. DATA_GOV_IN_API_KEY को .env.local में जोड़ें</span>
           </div>
         </div>
-      ) : (
-        <div className="p-4 rounded-2xl bg-[#DBF2DE]/40 border border-[#9EC2A9] text-[#10312B] flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#1F4A3F]" />
-            <span className="font-medium">
-              आधिकारिक data.gov.in / एगमार्कनेट दैनिक विपणन बुलेटिन से लाइव सिंक सक्रिय है।
-            </span>
+      ) : fetchError || apiStatus === 'auth_error' || apiStatus === 'network_error' ? (
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#FEE2E2] border border-[#FECACA] text-[#991B1B] shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-5 h-5 text-[#B91C1C] shrink-0" />
+            <div>
+              <h4 className="text-sm font-bold">
+                {apiStatus === 'auth_error' ? 'सरकारी एपीआई प्रमाणीकरण त्रुटि' : 'सरकारी पोर्टल से संपर्क त्रुटि'}
+              </h4>
+              <p className="text-xs opacity-95 mt-0.5">{statusMessageHi || fetchError}</p>
+            </div>
           </div>
-          <span className="text-[11px] text-[#52685B] font-mono">
-            स्रोत: Ministry of Agriculture, GoI
-          </span>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => loadPrices(true)}
+            className="gap-1.5 shrink-0 self-start sm:self-auto"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>पुनः प्रयास करें</span>
+          </Button>
+        </div>
+      ) : (
+        <div className="p-4 rounded-2xl bg-[#DBF2DE]/50 border border-[#9EC2A9] text-[#10312B] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs shadow-soft">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-[#1F4A3F] shrink-0" />
+            <div>
+              <span className="font-bold">
+                आधिकारिक data.gov.in / एगमार्कनेट दैनिक विपणन बुलेटिन से लाइव सिंक सक्रिय है।
+              </span>
+              <p className="text-[11px] text-[#52685B] mt-0.5">
+                अंतिम सिंक समय:{' '}
+                <span className="font-mono font-medium">
+                  {retrievedAt ? new Date(retrievedAt).toLocaleTimeString('hi-IN') : '...'}
+                </span>{' '}
+                • स्रोत:{' '}
+                <a
+                  href={officialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-medium hover:text-[#1F4A3F] inline-flex items-center gap-0.5"
+                >
+                  Ministry of Agriculture (GoI)
+                  <ExternalLink className="w-3 h-3 inline" />
+                </a>
+              </p>
+            </div>
+          </div>
+          <Badge variant="mint" size="sm" className="shrink-0 self-start sm:self-auto">
+            दैनिक आवक अवलोकन
+          </Badge>
         </div>
       )}
 
       {/* Filter Row */}
       <Card>
-        <CardContent className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <CardContent className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Select
-            label="फसल / जिंस (Commodity)"
-            value={selectedCommodity}
-            onChange={(e) => setSelectedCommodity(e.target.value)}
+            label="राज्य (State)"
+            value={selectedState}
+            onChange={(e) => {
+              setSelectedState(e.target.value);
+              setPageOffset(0);
+            }}
           >
-            {MP_COMMODITIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            {INDIAN_STATES.map((s) => (
+              <option key={s} value={s}>
+                {s}
               </option>
             ))}
           </Select>
@@ -264,7 +390,10 @@ export default function MandiRadarPage() {
           <Select
             label="जिला (District)"
             value={selectedDistrict}
-            onChange={(e) => setSelectedDistrict(e.target.value)}
+            onChange={(e) => {
+              setSelectedDistrict(e.target.value);
+              setPageOffset(0);
+            }}
           >
             <option value="All">सभी जिले (All Districts)</option>
             <option value="Sehore">सीहोर (Sehore)</option>
@@ -277,19 +406,60 @@ export default function MandiRadarPage() {
             <option value="Sagar">सागर (Sagar)</option>
           </Select>
 
-          <div className="flex items-end">
-            <Button
-              variant="outline"
-              size="md"
-              className="w-full gap-2 text-[#52685B] hover:text-[#10312B]"
-              onClick={() => {
-                setSelectedDistrict('Sehore');
-                setSelectedCommodity('Soybean');
-              }}
-            >
-              <RefreshCw className="w-4 h-4 text-[#52685B]" />
-              <span>डिफ़ॉल्ट रीसेट करें</span>
-            </Button>
+          <Select
+            label="फसल / जिंस (Commodity)"
+            value={selectedCommodity}
+            onChange={(e) => {
+              setSelectedCommodity(e.target.value);
+              setPageOffset(0);
+            }}
+          >
+            {EXTENDED_COMMODITIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </Select>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-[#52685B] uppercase tracking-wider">
+              मंडी खोजें (Search)
+            </label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="उदा. सीहोर, इंदौर, शरबती..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && loadPrices(true)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#DCE9DD] focus:outline-none focus:ring-2 focus:ring-[#1F4A3F]/20 text-[#10312B]"
+                />
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => loadPrices(true)}
+                className="shrink-0 px-3"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedState('Madhya Pradesh');
+                  setSelectedDistrict('Sehore');
+                  setSelectedCommodity('Soybean');
+                  setSearchQuery('');
+                  setPageOffset(0);
+                }}
+                className="shrink-0 px-2 text-[#52685B]"
+                title="डिफ़ॉल्ट रीसेट करें"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -299,24 +469,63 @@ export default function MandiRadarPage() {
         {/* Mandi Prices List (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3">
               <div>
-                <CardTitle className="text-base text-[#10312B]">
-                  मंडी भाव उद्धरण ({selectedCommodity})
+                <CardTitle className="text-base text-[#10312B] flex items-center gap-2">
+                  <span>दैनिक मंडी भाव उद्धरण</span>
+                  {selectedCommodity !== 'All' && (
+                    <Badge variant="mint" size="sm">
+                      {selectedCommodity}
+                    </Badge>
+                  )}
                 </CardTitle>
                 <CardDescription>
-                  {dataSource || 'Agmarknet / MP Mandi Board Official Records'}
+                  {dataSource || 'Official Daily Mandi Quotes'} • {totalRecords} रिकॉर्ड उपलब्ध
                 </CardDescription>
               </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => loadPrices(false)}
+                disabled={loadingPrices}
+                className="gap-1.5 text-xs text-[#52685B]"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingPrices ? 'animate-spin' : ''}`} />
+                <span>रिफ्रेश</span>
+              </Button>
             </CardHeader>
+
             <CardContent className="p-0 overflow-x-auto">
               {loadingPrices ? (
-                <div className="p-8 text-center text-[#52685B] text-sm">
-                  मंडी भाव लोड हो रहे हैं...
+                <div className="p-12 text-center text-[#52685B] text-sm space-y-2">
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#1F4A3F]" />
+                  <p>सरकारी एगमार्कनेट पोर्टल से दैनिक मंडी भाव लोड हो रहे हैं...</p>
                 </div>
               ) : mandiPrices.length === 0 ? (
-                <div className="p-8 text-center text-[#52685B] text-sm">
-                  चयनित फिल्टर के लिए कोई रिकॉर्ड नहीं मिला। कृपया दूसरा जिला चुनें।
+                <div className="p-12 text-center text-[#52685B] text-sm space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-[#EAF4E8] text-[#1F4A3F] flex items-center justify-center mx-auto">
+                    <Search className="w-6 h-6" />
+                  </div>
+                  <h4 className="font-bold text-base text-[#10312B]">
+                    कोई आवक रिकॉर्ड नहीं मिला
+                  </h4>
+                  <p className="text-xs text-[#718579] max-w-sm mx-auto">
+                    चयनित राज्य ({selectedState}), जिला ({selectedDistrict}) अथवा फसल ({selectedCommodity}) के लिए कोई दैनिक आवक दर्ज नहीं है।
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedDistrict('All');
+                      setSelectedCommodity('All');
+                      setSearchQuery('');
+                      loadPrices(true);
+                    }}
+                    className="mt-2"
+                  >
+                    सभी उपलब्ध मंडियां देखें
+                  </Button>
                 </div>
               ) : (
                 <table className="w-full text-left border-collapse text-sm">
@@ -340,28 +549,39 @@ export default function MandiRadarPage() {
                             {record.marketName}
                           </span>
                           <span className="text-[11px] text-[#52685B]">
-                            {record.district} • {record.variety} •{' '}
-                            <span className="font-mono">
-                              {isLiveFeed ? `आवक: ${record.arrivalDate}` : 'बेंचमार्क'}
+                            {record.district} • {record.commodity} ({record.variety})
+                            {record.grade ? ` • ${record.grade}` : ''} •{' '}
+                            <span className="font-mono font-medium text-[#10312B]">
+                              आवक: {record.arrivalDate}
                             </span>
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-right text-[#52685B]">
-                          {formatCurrency(record.minPrice)}
+                        <td className="py-3 px-3 text-right text-[#52685B] font-mono text-xs">
+                          {renderPrice(record.minPrice)}
                         </td>
-                        <td className="py-3 px-3 text-right font-black text-[#10312B] text-base">
-                          {formatCurrency(record.modalPrice)}
+                        <td className="py-3 px-3 text-right font-black text-[#10312B] text-base font-mono">
+                          {renderPrice(record.modalPrice)}
+                          <span className="text-[10px] font-normal text-[#52685B] block">
+                            ₹/क्विंटल
+                          </span>
                         </td>
-                        <td className="py-3 px-3 text-right text-[#52685B]">
-                          {formatCurrency(record.maxPrice)}
+                        <td className="py-3 px-3 text-right text-[#52685B] font-mono text-xs">
+                          {renderPrice(record.maxPrice)}
                         </td>
                         <td className="py-3 px-3 text-center">
                           <button
                             onClick={() => {
-                              setCalcPrice(record.modalPrice);
-                              setScenarioSalePrice(record.modalPrice);
+                              if (record.modalPrice !== null) {
+                                setCalcPrice(record.modalPrice);
+                                setScenarioSalePrice(record.modalPrice);
+                              }
                             }}
-                            className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-[#EAF4E8] hover:bg-[#1F4A3F] hover:text-white text-[#10312B] transition-colors border border-[#DCE9DD]"
+                            disabled={record.modalPrice === null}
+                            className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors border ${
+                              record.modalPrice !== null
+                                ? 'bg-[#EAF4E8] hover:bg-[#1F4A3F] hover:text-white text-[#10312B] border-[#DCE9DD]'
+                                : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                            }`}
                           >
                             कैलकुलेटर में लें
                           </button>
@@ -372,11 +592,48 @@ export default function MandiRadarPage() {
                 </table>
               )}
             </CardContent>
-            <CardFooter>
-              <div className="text-[11px] text-[#52685B] flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#1F4A3F]" />
+
+            {/* Pagination Controls */}
+            {totalRecords > pageSize && (
+              <div className="p-3.5 border-t border-[#DCE9DD] flex items-center justify-between text-xs text-[#52685B]">
                 <span>
-                  मॉडल भाव सर्वाधिक प्रचलित सौदों को दर्शाता है। वास्तविक बोली उपज की नमी एवं गुणवत्ता पर निर्भर करती है।
+                  दिखाए जा रहे हैं {pageOffset + 1}–
+                  {Math.min(pageOffset + pageSize, totalRecords)} (कुल {totalRecords})
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={pageOffset === 0 || loadingPrices}
+                    onClick={() => setPageOffset((prev) => Math.max(0, prev - pageSize))}
+                    className="p-1.5 h-8 gap-1"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>पिछला</span>
+                  </Button>
+                  <span className="px-2 font-mono font-bold text-[#10312B]">
+                    {Math.floor(pageOffset / pageSize) + 1} /{' '}
+                    {Math.ceil(totalRecords / pageSize)}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!hasMore || loadingPrices}
+                    onClick={() => setPageOffset((prev) => prev + pageSize)}
+                    className="p-1.5 h-8 gap-1"
+                  >
+                    <span>अगला</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <CardFooter className="bg-[#F3F8F2]/60 border-t border-[#DCE9DD]">
+              <div className="text-[11px] text-[#52685B] flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#1F4A3F] shrink-0" />
+                <span>
+                  मॉडल भाव दैनिक सौदों का भारित औसत होता है। वास्तविक बोली नमी, चमक व नीलामी प्रतिस्पर्धा के आधार पर तय होती है।
                 </span>
               </div>
             </CardFooter>
